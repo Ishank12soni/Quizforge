@@ -1,7 +1,8 @@
 .footer {
-  padding: 3rem 0 2rem;
-  background-color: var(--color-bg-dark);
-  color: #ffffff;
+  padding: 2.75rem 0 2rem;
+  background-color: var(--color-bg-footer);
+  color: var(--color-text-main);
+  border-top: var(--border-width) solid var(--border-subtle);
 }
 
 .footer__inner {
@@ -9,32 +10,34 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 1.5rem;
+  gap: 1.125rem;
 }
 
 .footer__logo {
-  font-size: 1.5rem;
+  font-size: 1.3125rem;
   font-weight: 700;
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+  color: var(--color-text-main);
 }
 
 .footer__tagline {
-  font-size: 1rem;
-  color: var(--color-text-light);
-  margin-bottom: 0.25rem;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.125rem;
 }
 
 .footer__project {
-  font-size: 0.875rem;
-  color: var(--color-secondary);
+  font-size: 0.8125rem;
+  color: var(--color-accent-cyan);
   font-weight: 500;
 }
 
 .footer__copyright {
   font-size: 0.8125rem;
-  color: var(--color-text-light);
-  padding-top: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-text-muted);
+  padding-top: 1.25rem;
+  border-top: var(--border-width) solid var(--border-subtle);
   width: 100%;
 }

@@ -1,22 +1,57 @@
 :root {
-  /* Colors */
-  --color-primary: #2563eb;
-  --color-primary-dark: #1d4ed8;
-  --color-primary-light: #dbeafe;
-  --color-secondary: #0ea5e9;
-  --color-accent: #10b981;
+  /* Core palette */
+  --color-bg-page: #07111f;
+  --color-bg-alt: #0b1728;
+  --color-bg-card: #0d2034;
+  --color-bg-footer: #040810;
 
-  --color-text: #1e293b;
-  --color-text-muted: #64748b;
-  --color-text-light: #94a3b8;
+  --color-accent-cyan: #00b8d9;
+  --color-accent-blue: #2563eb;
 
-  --color-bg: #ffffff;
-  --color-bg-alt: #f8fafc;
-  --color-bg-dark: #0f172a;
+  --color-text-main: #f5faff;
+  --color-text-secondary: #9fb3c8;
+  --color-text-muted: #60758a;
 
-  --color-border: #e2e8f0;
-  --color-card-shadow: rgba(15, 23, 42, 0.08);
-  --color-card-shadow-hover: rgba(15, 23, 42, 0.15);
+  --color-border: #1d405c;
+
+  /* Semantic aliases */
+  --color-primary: var(--color-accent-blue);
+  --color-primary-hover: #1d4ed8;
+  --color-primary-light: rgba(255, 255, 255, 0.04);
+  --color-secondary: var(--color-accent-cyan);
+  --color-accent: var(--color-accent-cyan);
+  --color-navy: var(--color-bg-footer);
+
+  --color-heading: var(--color-text-main);
+  --color-body: var(--color-text-secondary);
+  --color-text: var(--color-text-main);
+  --color-text-light: var(--color-text-muted);
+
+  --color-bg: var(--color-bg-card);
+  --color-bg-dark: var(--color-bg-footer);
+  --color-primary-dark: var(--color-primary-hover);
+
+  /* Borders & shadows — unified system */
+  --border-width: 1px;
+  --border-subtle: rgba(29, 64, 92, 0.55);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 3px 10px rgba(0, 0, 0, 0.22);
+  --shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.26);
+
+  /* Restrained button gradient */
+  --gradient-button: linear-gradient(
+    135deg,
+    var(--color-accent-blue) 0%,
+    #1a6fd4 55%,
+    var(--color-accent-cyan) 100%
+  );
+  --gradient-button-hover: linear-gradient(
+    135deg,
+    var(--color-primary-hover) 0%,
+    #1a6fd4 55%,
+    #009eb8 100%
+  );
 
   /* Typography */
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -25,13 +60,13 @@
   --section-padding: 5rem 1.5rem;
   --container-max-width: 1200px;
 
-  /* Border radius */
+  /* Border radius — consistent, moderate */
   --radius-sm: 0.375rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.5rem;
   --radius-full: 9999px;
 
   /* Transitions */
-  --transition-fast: 0.2s ease;
-  --transition-normal: 0.3s ease;
+  --transition-fast: 0.18s ease;
+  --transition-normal: 0.22s ease;
 }

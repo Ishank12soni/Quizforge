@@ -4,38 +4,40 @@
   justify-content: center;
   font-weight: 600;
   border-radius: var(--radius-md);
-  transition: background-color var(--transition-fast),
+  transition: background var(--transition-fast),
     color var(--transition-fast),
-    transform var(--transition-fast),
-    box-shadow var(--transition-fast);
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    opacity var(--transition-fast);
 }
 
 .btn:active {
-  transform: scale(0.98);
+  opacity: 0.9;
 }
 
-/* Variants */
 .btn--primary {
-  background-color: var(--color-primary);
+  background: var(--gradient-button);
   color: #ffffff;
+  box-shadow: var(--shadow-sm);
 }
 
 .btn--primary:hover {
-  background-color: var(--color-primary-dark);
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+  background: var(--gradient-button-hover);
+  box-shadow: var(--shadow-md);
 }
 
 .btn--outline {
   background-color: transparent;
-  color: var(--color-primary);
-  border: 2px solid var(--color-primary);
+  color: var(--color-text-secondary);
+  border: var(--border-width) solid var(--color-border);
 }
 
 .btn--outline:hover {
-  background-color: var(--color-primary-light);
+  background-color: rgba(255, 255, 255, 0.025);
+  border-color: var(--border-subtle);
+  color: var(--color-text-main);
 }
 
-/* Sizes */
 .btn--small {
   padding: 0.5rem 1.25rem;
   font-size: 0.875rem;
@@ -47,6 +49,6 @@
 }
 
 .btn--large {
-  padding: 1rem 2.25rem;
-  font-size: 1.125rem;
+  padding: 0.875rem 2rem;
+  font-size: 1.0625rem;
 }
