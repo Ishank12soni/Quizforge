@@ -13,7 +13,7 @@ function Hero() {
             through interactive quizzes.
           </p>
           <div className="hero__actions">
-            <Button href="#quizzes" size="large">
+            <Button href="/quiz" size="large">
               Start Quiz
             </Button>
             <Button href="#explore" variant="outline" size="large">
