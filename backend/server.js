@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const pool = require("./db");
 
 const app = express();
 const PORT = 5001;
@@ -22,103 +23,79 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// Quiz questions
-const questions = [
-  {
-    id: 1,
-    question: "What does IoT stand for?",
-    options: [
-      "Internet of Things",
-      "Integration of Technology",
-      "Internet of Technology",
-      "Interface of Things",
-    ],
-    correctAnswer: 0,
-  },
-  {
-    id: 2,
-    question: "Which device is commonly used to collect data in an IoT system?",
-    options: [
-      "Sensor",
-      "Monitor",
-      "Keyboard",
-      "Printer",
-    ],
-    correctAnswer: 0,
-  },
-  {
-    id: 3,
-    question: "Which protocol is commonly used in IoT communication?",
-    options: [
-      "MQTT",
-      "HTML",
-      "CSS",
-      "JPEG",
-    ],
-    correctAnswer: 0,
-  },
-  {
-    id: 4,
-    question: "What is the main purpose of an actuator?",
-    options: [
-      "Store data",
-      "Perform a physical action",
-      "Display a webpage",
-      "Create passwords",
-    ],
-    correctAnswer: 1,
-  },
-  {
-    id: 5,
-    question: "Which technology can process IoT data close to the device?",
-    options: [
-      "Edge Computing",
-      "Word Processing",
-      "Email",
-      "Bluetooth Keyboard",
-    ],
-    correctAnswer: 0,
-  },
-];
-
 // Get all quiz questions
-app.get("/api/quiz", (req, res) => {
-  const quiz = questions.map(({ correctAnswer, ...question }) => question);
+app.get("/api/quiz", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT id, question, options
+      FROM questions
+      WHERE quiz_id = 1
+      ORDER BY id
+    `);
 
-  res.json(quiz);
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching quiz:", error);
+
+    res.status(500).json({
+      message: "Failed to fetch quiz questions",
+    });
+  }
 });
 
 // Submit quiz answers
-app.post("/api/quiz/submit", (req, res) => {
-  const { answers } = req.body;
+app.post("/api/quiz/submit", async (req, res) => {
+  try {
+    const { answers } = req.body;
 
-  if (!Array.isArray(answers)) {
-    return res.status(400).json({
-      message: "Answers must be an array",
+    if (!Array.isArray(answers)) {
+      return res.status(400).json({
+        message: "Answers must be an array"
+      });
+    }
+
+    const result = await pool.query(`
+      SELECT id, options, correct_answer
+      FROM questions
+      WHERE quiz_id = 1
+      ORDER BY id
+    `);
+
+    const questions = result.rows;
+
+    let score = 0;
+
+    answers.forEach((answer) => {
+      const question = questions.find(
+        (q) => q.id === answer.questionId
+      );
+
+      if (
+        question &&
+        answer.selectedAnswer ===
+          question.options[question.correct_answer]
+      ) {
+        score++;
+      }
+    });
+
+    res.json({
+      score,
+      total: questions.length,
+      percentage: Math.round((score / questions.length) * 100),
+      message: "Quiz submitted successfully"
+    });
+
+  } catch (error) {
+    console.error("Error submitting quiz:", error);
+
+    res.status(500).json({
+      message: "Failed to submit quiz"
     });
   }
-
-  let score = 0;
-
-  answers.forEach((answer) => {
-    const question = questions.find((q) => q.id === answer.questionId);
-
-    if (
-  question &&
-  answer.selectedAnswer === question.options[question.correctAnswer]
-) {
-      score++;
-    }
-  });
-
-  res.json({
-    score,
-    total: questions.length,
-    percentage: Math.round((score / questions.length) * 100),
-    message: "Quiz submitted successfully",
-  });
 });
-
 app.listen(PORT, () => {
-  console.log(`Quizforge backend running on http://localhost:${PORT}`);
+  console.log(
+    `Quizforge backend running on http://localhost:${PORT}`
+  );
 });
