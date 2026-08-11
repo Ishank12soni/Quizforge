@@ -1,14 +1,37 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
 import HomePage from './pages/HomePage';
 import QuizPage from './pages/QuizPage';
+import HistoryPage from './pages/HistoryPage';
 
 function App() {
-  const path = window.location.pathname;
+  return (
+    <BrowserRouter>
+      <Routes>
 
-  if (path === '/quiz') {
-    return <QuizPage />;
-  }
+        <Route
+          path="/"
+          element={<HomePage />}
+        />
 
-  return <HomePage />;
+        <Route
+          path="/quiz"
+          element={<QuizPage />}
+        />
+
+        <Route
+          path="/history"
+          element={<HistoryPage />}
+        />
+
+        <Route
+          path="*"
+          element={<HomePage />}
+        />
+
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;

@@ -1,0 +1,592 @@
+/* =========================================================
+   QUIZFORGE HOME PAGE
+   PERFORMANCE DASHBOARD
+   ========================================================= */
+
+.home-performance {
+  width: 100%;
+  padding: 90px 20px;
+
+  background:
+    radial-gradient(
+      circle at 15% 20%,
+      rgba(0, 217, 255, 0.07),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 85% 70%,
+      rgba(37, 99, 235, 0.08),
+      transparent 30%
+    ),
+    #07111f;
+
+  color: #f5faff;
+}
+
+.home-performance-container {
+  width: min(1120px, 100%);
+  margin: 0 auto;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.home-performance-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.home-performance-badge {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 8px 15px;
+  margin-bottom: 16px;
+
+  border-radius: 999px;
+
+  color: #00d9ff;
+
+  background: rgba(0, 217, 255, 0.07);
+
+  border: 1px solid rgba(0, 217, 255, 0.25);
+
+  font-size: 12px;
+  font-weight: 900;
+
+  letter-spacing: 1.5px;
+}
+
+.home-performance-header h2 {
+  margin: 0;
+
+  font-size: clamp(30px, 5vw, 48px);
+
+  line-height: 1.15;
+}
+
+.home-performance-header h2 span {
+  color: #00d9ff;
+}
+
+.home-performance-header p {
+  max-width: 620px;
+
+  margin: 14px auto 0;
+
+  color: #9fb3c8;
+
+  font-size: 16px;
+
+  line-height: 1.6;
+}
+
+
+/* =========================================================
+   LOADING
+   ========================================================= */
+
+.performance-loading {
+  min-height: 220px;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 22px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(16, 36, 58, 0.96),
+      rgba(11, 23, 40, 0.96)
+    );
+
+  border: 1px solid #1d405c;
+}
+
+.performance-loading-icon {
+  width: 58px;
+  height: 58px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 14px;
+
+  border-radius: 16px;
+
+  background: rgba(0, 217, 255, 0.08);
+
+  border: 1px solid rgba(0, 217, 255, 0.3);
+
+  font-size: 27px;
+}
+
+.performance-loading p {
+  margin: 0;
+
+  color: #9fb3c8;
+}
+
+
+/* =========================================================
+   PERFORMANCE GRID
+   ========================================================= */
+
+.home-performance-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 16px;
+
+  margin-bottom: 18px;
+}
+
+.home-performance-card {
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  min-height: 120px;
+
+  padding: 20px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(16, 36, 58, 0.98),
+      rgba(11, 23, 40, 0.98)
+    );
+
+  border: 1px solid #1d405c;
+
+  border-radius: 18px;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.home-performance-card:hover {
+  transform: translateY(-4px);
+
+  border-color: rgba(0, 217, 255, 0.5);
+
+  box-shadow:
+    0 15px 35px rgba(0, 217, 255, 0.08);
+}
+
+.home-performance-icon {
+  width: 48px;
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 14px;
+
+  background: rgba(0, 217, 255, 0.08);
+
+  border: 1px solid rgba(0, 217, 255, 0.2);
+
+  font-size: 21px;
+}
+
+.home-performance-card strong {
+  display: block;
+
+  color: #00d9ff;
+
+  font-size: 26px;
+
+  line-height: 1;
+}
+
+.home-performance-card span {
+  display: block;
+
+  margin-top: 7px;
+
+  color: #9fb3c8;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   OVERVIEW
+   ========================================================= */
+
+.home-performance-overview {
+  padding: 25px;
+
+  margin-bottom: 18px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(16, 36, 58, 0.98),
+      rgba(11, 23, 40, 0.98)
+    );
+
+  border: 1px solid #1d405c;
+
+  border-radius: 20px;
+}
+
+.home-performance-overview-header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 18px;
+}
+
+.home-performance-overview-header h3 {
+  margin: 0;
+
+  font-size: 20px;
+}
+
+.home-performance-overview-header p {
+  margin: 5px 0 0;
+
+  color: #9fb3c8;
+
+  font-size: 13px;
+}
+
+.home-performance-overview-header > strong {
+  color: #00d9ff;
+
+  font-size: 30px;
+
+  font-weight: 900;
+}
+
+.home-performance-progress {
+  width: 100%;
+  height: 11px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background: #07111f;
+
+  border: 1px solid #1d405c;
+}
+
+.home-performance-progress > div {
+  height: 100%;
+
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      90deg,
+      #2563eb,
+      #00d9ff
+    );
+
+  box-shadow:
+    0 0 18px rgba(0, 217, 255, 0.4);
+
+  transition:
+    width 0.8s ease;
+}
+
+.home-performance-overview-stats {
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin-top: 12px;
+
+  color: #9fb3c8;
+
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   HISTORY
+   ========================================================= */
+
+.home-history {
+  padding: 25px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(16, 36, 58, 0.98),
+      rgba(11, 23, 40, 0.98)
+    );
+
+  border: 1px solid #1d405c;
+
+  border-radius: 20px;
+}
+
+.home-history-header {
+  margin-bottom: 18px;
+}
+
+.home-history-header h3 {
+  margin: 0;
+
+  font-size: 20px;
+}
+
+.home-history-header p {
+  margin: 5px 0 0;
+
+  color: #9fb3c8;
+
+  font-size: 13px;
+}
+
+.home-history-list {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 10px;
+}
+
+.home-history-item {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding: 15px;
+
+  background: rgba(7, 17, 31, 0.55);
+
+  border: 1px solid #1d405c;
+
+  border-radius: 14px;
+
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.home-history-item:hover {
+  transform: translateX(3px);
+
+  border-color: rgba(0, 217, 255, 0.4);
+}
+
+.home-history-left {
+  display: flex;
+
+  align-items: center;
+
+  gap: 13px;
+
+  min-width: 0;
+}
+
+.home-history-icon {
+  width: 43px;
+  height: 43px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 12px;
+
+  background: rgba(0, 217, 255, 0.08);
+
+  border: 1px solid rgba(0, 217, 255, 0.2);
+}
+
+.home-history-left strong {
+  display: block;
+
+  color: #f5faff;
+
+  font-size: 14px;
+}
+
+.home-history-left span {
+  display: block;
+
+  margin-top: 4px;
+
+  color: #9fb3c8;
+
+  font-size: 12px;
+}
+
+.home-history-right {
+  min-width: 170px;
+
+  text-align: right;
+}
+
+.home-history-right > strong {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: #00d9ff;
+
+  font-size: 16px;
+}
+
+.home-history-bar {
+  width: 170px;
+  height: 6px;
+
+  overflow: hidden;
+
+  margin-left: auto;
+
+  border-radius: 999px;
+
+  background: #07111f;
+}
+
+.home-history-bar > div {
+  height: 100%;
+
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      90deg,
+      #2563eb,
+      #00d9ff
+    );
+}
+
+
+/* =========================================================
+   EMPTY STATES
+   ========================================================= */
+
+.home-history-empty,
+.home-performance-empty {
+  padding: 35px 20px;
+
+  text-align: center;
+
+  background: rgba(7, 17, 31, 0.45);
+
+  border: 1px dashed #1d405c;
+
+  border-radius: 15px;
+}
+
+.home-history-empty > span {
+  font-size: 30px;
+}
+
+.home-history-empty h4,
+.home-performance-empty h3 {
+  margin: 10px 0 6px;
+
+  color: #f5faff;
+
+  font-size: 17px;
+}
+
+.home-history-empty p,
+.home-performance-empty p {
+  margin: 0;
+
+  color: #9fb3c8;
+
+  font-size: 13px;
+}
+
+.home-performance-empty > div {
+  font-size: 35px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+
+  .home-performance-grid {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+}
+
+@media (max-width: 600px) {
+
+  .home-performance {
+    padding: 65px 15px;
+  }
+
+  .home-performance-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home-performance-card {
+    min-height: 100px;
+  }
+
+  .home-performance-overview,
+  .home-history {
+    padding: 20px 16px;
+  }
+
+  .home-performance-overview-header {
+    align-items: flex-start;
+  }
+
+  .home-performance-overview-header > strong {
+    font-size: 25px;
+  }
+
+  .home-performance-overview-stats {
+    flex-direction: column;
+  }
+
+  .home-history-item {
+    align-items: flex-start;
+  }
+
+  .home-history-right {
+    min-width: 90px;
+  }
+
+  .home-history-bar {
+    width: 90px;
+  }
+
+}
