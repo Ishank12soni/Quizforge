@@ -146,6 +146,7 @@
   display: flex;
 
   align-items: center;
+
   justify-content: center;
 
   margin-bottom: 20px;
@@ -158,7 +159,8 @@
 
   font-size: 34px;
 
-  animation: historyPulse 1.5s ease-in-out infinite;
+  animation:
+    historyPulse 1.5s ease-in-out infinite;
 }
 
 .history-loading h2 {
@@ -206,6 +208,7 @@
   display: flex;
 
   align-items: center;
+
   justify-content: center;
 
   margin: 0 auto 20px;
@@ -279,7 +282,8 @@
 .history-card:hover {
   transform: translateY(-3px);
 
-  border-color: rgba(0, 217, 255, 0.45);
+  border-color:
+    rgba(0, 217, 255, 0.45);
 
   box-shadow:
     0 20px 50px rgba(0, 217, 255, 0.08);
@@ -293,7 +297,8 @@
 .history-card-top {
   display: grid;
 
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns:
+    auto 1fr auto;
 
   align-items: center;
 
@@ -315,15 +320,18 @@
   display: flex;
 
   align-items: center;
+
   justify-content: center;
 
   border-radius: 14px;
 
   color: #00d9ff;
 
-  background: rgba(0, 217, 255, 0.08);
+  background:
+    rgba(0, 217, 255, 0.08);
 
-  border: 1px solid rgba(0, 217, 255, 0.2);
+  border:
+    1px solid rgba(0, 217, 255, 0.2);
 
   font-weight: 900;
 
@@ -341,6 +349,8 @@
   align-items: center;
 
   gap: 14px;
+
+  min-width: 0;
 }
 
 .history-card-topic > span {
@@ -351,13 +361,18 @@
   display: flex;
 
   align-items: center;
+
   justify-content: center;
+
+  flex-shrink: 0;
 
   border-radius: 13px;
 
-  background: rgba(37, 99, 235, 0.12);
+  background:
+    rgba(37, 99, 235, 0.12);
 
-  border: 1px solid rgba(37, 99, 235, 0.25);
+  border:
+    1px solid rgba(37, 99, 235, 0.25);
 
   font-size: 21px;
 }
@@ -370,6 +385,8 @@
   font-size: 18px;
 
   font-weight: 800;
+
+  line-height: 1.3;
 }
 
 .history-card-topic p {
@@ -378,6 +395,8 @@
   color: #60758a;
 
   font-size: 13px;
+
+  line-height: 1.3;
 }
 
 
@@ -387,6 +406,8 @@
 
 .history-card-score {
   text-align: right;
+
+  min-width: 90px;
 }
 
 .history-card-score strong {
@@ -397,18 +418,22 @@
   font-size: 27px;
 
   font-weight: 900;
+
+  line-height: 1.1;
 }
 
 .history-card-score span {
   display: block;
 
-  margin-top: 3px;
+  margin-top: 5px;
 
   color: #9fb3c8;
 
   font-size: 12px;
 
   font-weight: 700;
+
+  line-height: 1.2;
 }
 
 
@@ -447,7 +472,8 @@
   box-shadow:
     0 0 16px rgba(0, 217, 255, 0.35);
 
-  transition: width 0.6s ease;
+  transition:
+    width 0.6s ease;
 }
 
 
@@ -464,6 +490,11 @@
   gap: 14px;
 }
 
+
+/* =========================================================
+   DETAIL CARD
+   ========================================================= */
+
 .history-details > div {
   display: flex;
 
@@ -477,10 +508,17 @@
 
   border-radius: 13px;
 
-  background: rgba(7, 17, 31, 0.55);
+  background:
+    rgba(7, 17, 31, 0.55);
 
-  border: 1px solid #1d405c;
+  border:
+    1px solid #1d405c;
 }
+
+
+/* =========================================================
+   DETAIL ICON
+   ========================================================= */
 
 .history-details > div > span {
   width: 36px;
@@ -492,29 +530,58 @@
   display: flex;
 
   align-items: center;
+
   justify-content: center;
 
   border-radius: 10px;
 
   color: #00d9ff;
 
-  background: rgba(0, 217, 255, 0.08);
+  background:
+    rgba(0, 217, 255, 0.08);
 
   font-size: 16px;
 }
 
+
+/* =========================================================
+   DETAIL TEXT
+   ========================================================= */
+
+.history-details > div > div {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: flex-start;
+
+  justify-content: center;
+
+  gap: 3px;
+
+  min-width: 0;
+}
+
 .history-details strong {
+  display: block;
+
   color: #f5faff;
 
   font-size: 15px;
+
+  line-height: 1.3;
 
   white-space: nowrap;
 }
 
 .history-details small {
+  display: block;
+
   color: #60758a;
 
   font-size: 11px;
+
+  line-height: 1.3;
 
   white-space: nowrap;
 }
@@ -525,6 +592,7 @@
    ========================================================= */
 
 @keyframes historyPulse {
+
   0%,
   100% {
     transform: scale(1);
@@ -549,7 +617,8 @@
 @media (max-width: 800px) {
 
   .history-page {
-    padding: 100px 16px 60px;
+    padding:
+      100px 16px 60px;
   }
 
   .history-card-top {
@@ -561,11 +630,14 @@
     grid-column: 2;
 
     text-align: left;
+
+    min-width: auto;
   }
 
   .history-details {
     grid-template-columns: 1fr;
   }
+
 }
 
 
@@ -576,7 +648,8 @@
 @media (max-width: 520px) {
 
   .history-page {
-    padding: 90px 12px 50px;
+    padding:
+      90px 12px 50px;
   }
 
   .history-header {
@@ -601,13 +674,19 @@
 
   .history-card-number {
     width: 40px;
+
     height: 40px;
 
     border-radius: 11px;
   }
 
+  .history-card-topic {
+    gap: 10px;
+  }
+
   .history-card-topic > span {
     width: 40px;
+
     height: 40px;
   }
 
@@ -625,6 +704,10 @@
 
   .history-details > div {
     padding: 12px;
+  }
+
+  .history-details strong {
+    font-size: 14px;
   }
 
 }

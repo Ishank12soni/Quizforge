@@ -1,0 +1,379 @@
+/* =========================================================
+   STUDENT NAME PAGE
+   ========================================================= */
+
+.student-name-page {
+  min-height: 100vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 40px 20px;
+
+  box-sizing: border-box;
+
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(0, 217, 255, 0.12),
+      transparent 42%
+    ),
+    #07111f;
+
+  color: #f5faff;
+}
+
+
+/* =========================================================
+   CONTAINER
+   ========================================================= */
+
+.student-name-container {
+  width: 100%;
+  max-width: 560px;
+
+  text-align: center;
+}
+
+
+/* =========================================================
+   BRAND
+   ========================================================= */
+
+.student-name-brand {
+  margin-bottom: 30px;
+}
+
+.student-name-logo {
+  width: 58px;
+  height: 58px;
+
+  margin: 0 auto 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 17px;
+
+  background: rgba(0, 217, 255, 0.1);
+
+  border: 1px solid #1d405c;
+
+  box-shadow:
+    0 0 28px rgba(0, 217, 255, 0.14);
+
+  font-size: 27px;
+}
+
+.student-name-brand h1 {
+  margin: 0;
+
+  color: #f5faff;
+
+  font-size: 34px;
+
+  font-weight: 900;
+
+  letter-spacing: -1px;
+}
+
+.student-name-brand h1 span {
+  color: #00d9ff;
+}
+
+.student-name-brand p {
+  margin: 7px 0 0;
+
+  color: #60758a;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   CARD
+   ========================================================= */
+
+.student-name-card {
+  padding: 38px;
+
+  text-align: left;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(16, 36, 58, 0.98),
+      rgba(11, 23, 40, 0.98)
+    );
+
+  border: 1px solid #1d405c;
+
+  border-radius: 24px;
+
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.28);
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   WELCOME
+   ========================================================= */
+
+.student-welcome-icon {
+  width: 64px;
+  height: 64px;
+
+  margin-bottom: 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 18px;
+
+  background: rgba(0, 217, 255, 0.08);
+
+  border: 1px solid rgba(0, 217, 255, 0.2);
+
+  font-size: 31px;
+}
+
+.student-name-label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #00d9ff;
+
+  font-size: 11px;
+
+  font-weight: 900;
+
+  letter-spacing: 1.5px;
+}
+
+.student-name-card h2 {
+  margin: 0;
+
+  color: #f5faff;
+
+  font-size: 30px;
+
+  font-weight: 800;
+}
+
+.student-name-description {
+  margin: 12px 0 28px;
+
+  color: #9fb3c8;
+
+  font-size: 14px;
+
+  line-height: 1.65;
+}
+
+
+/* =========================================================
+   INPUT
+   ========================================================= */
+
+.student-input-group {
+  margin-bottom: 15px;
+}
+
+.student-input-group label {
+  display: block;
+
+  margin-bottom: 9px;
+
+  color: #f5faff;
+
+  font-size: 13px;
+
+  font-weight: 700;
+}
+
+.student-input-group input {
+  width: 100%;
+
+  padding: 15px 16px;
+
+  box-sizing: border-box;
+
+  border-radius: 12px;
+
+  outline: none;
+
+  background: #07111f;
+
+  border: 1px solid #1d405c;
+
+  color: #f5faff;
+
+  font-size: 15px;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.student-input-group input::placeholder {
+  color: #60758a;
+}
+
+.student-input-group input:focus {
+  border-color: #00d9ff;
+
+  box-shadow:
+    0 0 0 3px rgba(0, 217, 255, 0.08);
+}
+
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.student-name-error {
+  margin-bottom: 14px;
+
+  padding: 11px 13px;
+
+  border-radius: 10px;
+
+  background: rgba(255, 92, 105, 0.08);
+
+  border: 1px solid rgba(255, 92, 105, 0.25);
+
+  color: #ff7b86;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   CONTINUE BUTTON
+   ========================================================= */
+
+.student-continue-button {
+  width: 100%;
+
+  min-height: 52px;
+
+  margin-top: 8px;
+
+  padding: 0 18px;
+
+  border: 0;
+
+  border-radius: 12px;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #2563eb,
+      #00d9ff
+    );
+
+  color: #ffffff;
+
+  font-size: 14px;
+
+  font-weight: 800;
+
+  box-shadow:
+    0 8px 24px rgba(0, 217, 255, 0.16);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.student-continue-button:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 30px rgba(0, 217, 255, 0.24);
+}
+
+.student-continue-button span {
+  font-size: 20px;
+}
+
+
+/* =========================================================
+   BACK BUTTON
+   ========================================================= */
+
+.student-back-button {
+  width: 100%;
+
+  margin-top: 14px;
+
+  padding: 11px;
+
+  background: transparent;
+
+  border: 0;
+
+  color: #60758a;
+
+  cursor: pointer;
+
+  font-size: 13px;
+
+  font-weight: 700;
+}
+
+.student-back-button:hover {
+  color: #00d9ff;
+}
+
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.student-name-footer {
+  margin-top: 22px;
+
+  color: #60758a;
+
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+  .student-name-page {
+    padding: 25px 15px;
+  }
+
+  .student-name-card {
+    padding: 27px 20px;
+  }
+
+  .student-name-card h2 {
+    font-size: 25px;
+  }
+
+  .student-name-brand h1 {
+    font-size: 30px;
+  }
+
+}

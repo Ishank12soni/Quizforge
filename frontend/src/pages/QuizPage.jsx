@@ -1,191 +1,487 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import {
+  useSearchParams,
+  useNavigate,
+} from 'react-router-dom';
 
 import './QuizPage.css';
+
+
+// =========================================================
+// TOPIC INFORMATION
+// =========================================================
 
 const topicInfo = {
   1: {
     name: 'IoT Fundamentals',
     icon: '🔗',
-    visual: 'IoT Device → Network → Cloud → Application',
+    visual:
+      'IoT Device → Network → Cloud → Application',
     conceptTitle: 'How an IoT System Works',
     conceptDescription:
       'IoT connects physical devices to networks so data can be collected, communicated, processed, and used by applications.',
     flow: [
-      { icon: '📟', title: 'Device', text: 'Collects information' },
-      { icon: '📡', title: 'Network', text: 'Transfers data' },
-      { icon: '☁️', title: 'Cloud', text: 'Processes data' },
-      { icon: '💻', title: 'Application', text: 'Uses information' },
+      {
+        icon: '📟',
+        title: 'Device',
+        text: 'Collects information',
+      },
+      {
+        icon: '📡',
+        title: 'Network',
+        text: 'Transfers data',
+      },
+      {
+        icon: '☁️',
+        title: 'Cloud',
+        text: 'Processes data',
+      },
+      {
+        icon: '💻',
+        title: 'Application',
+        text: 'Uses information',
+      },
     ],
   },
 
   2: {
     name: 'Sensors & Actuators',
     icon: '📊',
-    visual: 'Physical World → Sensor → Controller → Actuator',
-    conceptTitle: 'Sensor → Controller → Actuator',
+    visual:
+      'Physical World → Sensor → Controller → Actuator',
+    conceptTitle:
+      'Sensor → Controller → Actuator',
     conceptDescription:
       'Sensors collect information from the physical world, controllers make decisions, and actuators perform physical actions.',
     flow: [
-      { icon: '🌍', title: 'Physical World', text: 'Physical conditions' },
-      { icon: '📊', title: 'Sensor', text: 'Collects data' },
-      { icon: '🧠', title: 'Controller', text: 'Makes decisions' },
-      { icon: '⚙️', title: 'Actuator', text: 'Performs action' },
+      {
+        icon: '🌍',
+        title: 'Physical World',
+        text: 'Physical conditions',
+      },
+      {
+        icon: '📊',
+        title: 'Sensor',
+        text: 'Collects data',
+      },
+      {
+        icon: '🧠',
+        title: 'Controller',
+        text: 'Makes decisions',
+      },
+      {
+        icon: '⚙️',
+        title: 'Actuator',
+        text: 'Performs action',
+      },
     ],
   },
 
   3: {
     name: 'Communication Protocols',
     icon: '📡',
-    visual: 'Device → MQTT / HTTP / CoAP → IoT Platform',
+    visual:
+      'Device → MQTT / HTTP / CoAP → IoT Platform',
     conceptTitle: 'IoT Communication',
     conceptDescription:
       'Communication protocols allow IoT devices to exchange data with gateways, servers, and cloud platforms.',
     flow: [
-      { icon: '📟', title: 'Device', text: 'Creates data' },
-      { icon: '📡', title: 'Protocol', text: 'Transfers data' },
-      { icon: '🌐', title: 'Network', text: 'Connects devices' },
-      { icon: '☁️', title: 'Platform', text: 'Receives data' },
+      {
+        icon: '📟',
+        title: 'Device',
+        text: 'Creates data',
+      },
+      {
+        icon: '📡',
+        title: 'Protocol',
+        text: 'Transfers data',
+      },
+      {
+        icon: '🌐',
+        title: 'Network',
+        text: 'Connects devices',
+      },
+      {
+        icon: '☁️',
+        title: 'Platform',
+        text: 'Receives data',
+      },
     ],
   },
 
   4: {
     name: 'Industrial Automation',
     icon: '🏭',
-    visual: 'Sensor → PLC → SCADA → Machine',
-    conceptTitle: 'Industrial Automation Flow',
+    visual:
+      'Sensor → PLC → SCADA → Machine',
+    conceptTitle:
+      'Industrial Automation Flow',
     conceptDescription:
       'Industrial automation uses sensors, controllers, and monitoring systems to control physical machines and industrial processes.',
     flow: [
-      { icon: '📊', title: 'Sensor', text: 'Measures conditions' },
-      { icon: '🧠', title: 'PLC', text: 'Controls process' },
-      { icon: '🖥️', title: 'SCADA', text: 'Monitors system' },
-      { icon: '🏭', title: 'Machine', text: 'Performs operation' },
+      {
+        icon: '📊',
+        title: 'Sensor',
+        text: 'Measures conditions',
+      },
+      {
+        icon: '🧠',
+        title: 'PLC',
+        text: 'Controls process',
+      },
+      {
+        icon: '🖥️',
+        title: 'SCADA',
+        text: 'Monitors system',
+      },
+      {
+        icon: '🏭',
+        title: 'Machine',
+        text: 'Performs operation',
+      },
     ],
   },
 
   5: {
     name: 'Cloud & Edge Computing',
     icon: '☁️',
-    visual: 'Device → Edge → Cloud → Analytics',
-    conceptTitle: 'Edge + Cloud Architecture',
+    visual:
+      'Device → Edge → Cloud → Analytics',
+    conceptTitle:
+      'Edge + Cloud Architecture',
     conceptDescription:
       'Edge computing processes data close to the device, while cloud computing provides large-scale storage and analytics.',
     flow: [
-      { icon: '📟', title: 'Device', text: 'Generates data' },
-      { icon: '⚡', title: 'Edge', text: 'Processes locally' },
-      { icon: '☁️', title: 'Cloud', text: 'Stores information' },
-      { icon: '📈', title: 'Analytics', text: 'Finds insights' },
+      {
+        icon: '📟',
+        title: 'Device',
+        text: 'Generates data',
+      },
+      {
+        icon: '⚡',
+        title: 'Edge',
+        text: 'Processes locally',
+      },
+      {
+        icon: '☁️',
+        title: 'Cloud',
+        text: 'Stores information',
+      },
+      {
+        icon: '📈',
+        title: 'Analytics',
+        text: 'Finds insights',
+      },
     ],
   },
 
   6: {
     name: 'IoT Security',
     icon: '🔒',
-    visual: 'Device → Authentication → Encryption → Secure Network',
-    conceptTitle: 'IoT Security Architecture',
+    visual:
+      'Device → Authentication → Encryption → Secure Network',
+    conceptTitle:
+      'IoT Security Architecture',
     conceptDescription:
       'IoT security protects devices and data using authentication, encryption, access control, and secure communication.',
     flow: [
-      { icon: '📟', title: 'Device', text: 'IoT endpoint' },
-      { icon: '🔐', title: 'Authentication', text: 'Verifies identity' },
-      { icon: '🛡️', title: 'Encryption', text: 'Protects data' },
-      { icon: '🌐', title: 'Secure Network', text: 'Safe communication' },
+      {
+        icon: '📟',
+        title: 'Device',
+        text: 'IoT endpoint',
+      },
+      {
+        icon: '🔐',
+        title: 'Authentication',
+        text: 'Verifies identity',
+      },
+      {
+        icon: '🛡️',
+        title: 'Encryption',
+        text: 'Protects data',
+      },
+      {
+        icon: '🌐',
+        title: 'Secure Network',
+        text: 'Safe communication',
+      },
     ],
   },
 };
 
 
-/* =========================================================
-   QUESTION-SPECIFIC VISUALS
-   ========================================================= */
+// =========================================================
+// QUESTION-SPECIFIC VISUALS
+// =========================================================
 
 const visualSets = {
   temperature: [
-    { icon: '🌡️', title: 'Physical Condition', text: 'Temperature' },
-    { icon: '📊', title: 'Sensor', text: 'Measures temperature' },
-    { icon: '📡', title: 'Data Signal', text: 'Sends measurement' },
-    { icon: '🧠', title: 'Controller', text: 'Processes data' },
+    {
+      icon: '🌡️',
+      title: 'Physical Condition',
+      text: 'Temperature',
+    },
+    {
+      icon: '📊',
+      title: 'Sensor',
+      text: 'Measures temperature',
+    },
+    {
+      icon: '📡',
+      title: 'Data Signal',
+      text: 'Sends measurement',
+    },
+    {
+      icon: '🧠',
+      title: 'Controller',
+      text: 'Processes data',
+    },
   ],
 
   sensor: [
-    { icon: '🌍', title: 'Physical World', text: 'Real condition' },
-    { icon: '📊', title: 'Sensor', text: 'Detects condition' },
-    { icon: '📡', title: 'Data', text: 'Measurement' },
-    { icon: '🧠', title: 'Controller', text: 'Makes decision' },
+    {
+      icon: '🌍',
+      title: 'Physical World',
+      text: 'Real condition',
+    },
+    {
+      icon: '📊',
+      title: 'Sensor',
+      text: 'Detects condition',
+    },
+    {
+      icon: '📡',
+      title: 'Data',
+      text: 'Measurement',
+    },
+    {
+      icon: '🧠',
+      title: 'Controller',
+      text: 'Makes decision',
+    },
   ],
 
   actuator: [
-    { icon: '🧠', title: 'Controller', text: 'Sends command' },
-    { icon: '📡', title: 'Control Signal', text: 'Transfers command' },
-    { icon: '⚙️', title: 'Actuator', text: 'Receives command' },
-    { icon: '🏭', title: 'Machine', text: 'Performs action' },
+    {
+      icon: '🧠',
+      title: 'Controller',
+      text: 'Sends command',
+    },
+    {
+      icon: '📡',
+      title: 'Control Signal',
+      text: 'Transfers command',
+    },
+    {
+      icon: '⚙️',
+      title: 'Actuator',
+      text: 'Receives command',
+    },
+    {
+      icon: '🏭',
+      title: 'Machine',
+      text: 'Performs action',
+    },
   ],
 
   mqtt: [
-    { icon: '📟', title: 'IoT Device', text: 'Publishes data' },
-    { icon: '📡', title: 'MQTT', text: 'Messaging protocol' },
-    { icon: '🔄', title: 'Broker', text: 'Routes messages' },
-    { icon: '☁️', title: 'IoT Platform', text: 'Receives data' },
+    {
+      icon: '📟',
+      title: 'IoT Device',
+      text: 'Publishes data',
+    },
+    {
+      icon: '📡',
+      title: 'MQTT',
+      text: 'Messaging protocol',
+    },
+    {
+      icon: '🔄',
+      title: 'Broker',
+      text: 'Routes messages',
+    },
+    {
+      icon: '☁️',
+      title: 'IoT Platform',
+      text: 'Receives data',
+    },
   ],
 
   http: [
-    { icon: '📟', title: 'IoT Device', text: 'Sends request' },
-    { icon: '🌐', title: 'HTTP', text: 'Communication' },
-    { icon: '🖥️', title: 'Server', text: 'Processes request' },
-    { icon: '☁️', title: 'Application', text: 'Returns response' },
+    {
+      icon: '📟',
+      title: 'IoT Device',
+      text: 'Sends request',
+    },
+    {
+      icon: '🌐',
+      title: 'HTTP',
+      text: 'Communication',
+    },
+    {
+      icon: '🖥️',
+      title: 'Server',
+      text: 'Processes request',
+    },
+    {
+      icon: '☁️',
+      title: 'Application',
+      text: 'Returns response',
+    },
   ],
 
   plc: [
-    { icon: '📊', title: 'Sensor', text: 'Measures process' },
-    { icon: '🧠', title: 'PLC', text: 'Executes logic' },
-    { icon: '⚡', title: 'Control Signal', text: 'Sends command' },
-    { icon: '⚙️', title: 'Machine', text: 'Performs action' },
+    {
+      icon: '📊',
+      title: 'Sensor',
+      text: 'Measures process',
+    },
+    {
+      icon: '🧠',
+      title: 'PLC',
+      text: 'Executes logic',
+    },
+    {
+      icon: '⚡',
+      title: 'Control Signal',
+      text: 'Sends command',
+    },
+    {
+      icon: '⚙️',
+      title: 'Machine',
+      text: 'Performs action',
+    },
   ],
 
   scada: [
-    { icon: '📊', title: 'Sensors', text: 'Collect data' },
-    { icon: '🧠', title: 'PLC', text: 'Controls process' },
-    { icon: '🖥️', title: 'SCADA', text: 'Monitors system' },
-    { icon: '🏭', title: 'Plant', text: 'Industrial process' },
+    {
+      icon: '📊',
+      title: 'Sensors',
+      text: 'Collect data',
+    },
+    {
+      icon: '🧠',
+      title: 'PLC',
+      text: 'Controls process',
+    },
+    {
+      icon: '🖥️',
+      title: 'SCADA',
+      text: 'Monitors system',
+    },
+    {
+      icon: '🏭',
+      title: 'Plant',
+      text: 'Industrial process',
+    },
   ],
 
   edge: [
-    { icon: '📟', title: 'IoT Device', text: 'Generates data' },
-    { icon: '⚡', title: 'Edge', text: 'Processes locally' },
-    { icon: '☁️', title: 'Cloud', text: 'Stores data' },
-    { icon: '📈', title: 'Analytics', text: 'Finds insights' },
+    {
+      icon: '📟',
+      title: 'IoT Device',
+      text: 'Generates data',
+    },
+    {
+      icon: '⚡',
+      title: 'Edge',
+      text: 'Processes locally',
+    },
+    {
+      icon: '☁️',
+      title: 'Cloud',
+      text: 'Stores data',
+    },
+    {
+      icon: '📈',
+      title: 'Analytics',
+      text: 'Finds insights',
+    },
   ],
 
   cloud: [
-    { icon: '📟', title: 'Device', text: 'Creates data' },
-    { icon: '🌐', title: 'Internet', text: 'Transfers data' },
-    { icon: '☁️', title: 'Cloud', text: 'Stores data' },
-    { icon: '📈', title: 'Analytics', text: 'Analyzes data' },
+    {
+      icon: '📟',
+      title: 'Device',
+      text: 'Creates data',
+    },
+    {
+      icon: '🌐',
+      title: 'Internet',
+      text: 'Transfers data',
+    },
+    {
+      icon: '☁️',
+      title: 'Cloud',
+      text: 'Stores data',
+    },
+    {
+      icon: '📈',
+      title: 'Analytics',
+      text: 'Analyzes data',
+    },
   ],
 
   encryption: [
-    { icon: '📟', title: 'IoT Device', text: 'Creates data' },
-    { icon: '🔐', title: 'Encryption', text: 'Protects data' },
-    { icon: '🌐', title: 'Network', text: 'Transfers securely' },
-    { icon: '☁️', title: 'Server', text: 'Receives data' },
+    {
+      icon: '📟',
+      title: 'IoT Device',
+      text: 'Creates data',
+    },
+    {
+      icon: '🔐',
+      title: 'Encryption',
+      text: 'Protects data',
+    },
+    {
+      icon: '🌐',
+      title: 'Network',
+      text: 'Transfers securely',
+    },
+    {
+      icon: '☁️',
+      title: 'Server',
+      text: 'Receives data',
+    },
   ],
 
   authentication: [
-    { icon: '📟', title: 'Device', text: 'Requests access' },
-    { icon: '🔑', title: 'Authentication', text: 'Checks identity' },
-    { icon: '🛡️', title: 'Authorization', text: 'Checks permission' },
-    { icon: '🌐', title: 'Network', text: 'Allows access' },
+    {
+      icon: '📟',
+      title: 'Device',
+      text: 'Requests access',
+    },
+    {
+      icon: '🔑',
+      title: 'Authentication',
+      text: 'Checks identity',
+    },
+    {
+      icon: '🛡️',
+      title: 'Authorization',
+      text: 'Checks permission',
+    },
+    {
+      icon: '🌐',
+      title: 'Network',
+      text: 'Allows access',
+    },
   ],
 };
 
 
-/* =========================================================
-   FIND VISUAL FOR QUESTION
-   ========================================================= */
+// =========================================================
+// FIND VISUAL FOR QUESTION
+// =========================================================
 
-function getQuestionVisual(questionText, topic) {
-  const text = questionText.toLowerCase();
+function getQuestionVisual(
+  questionText,
+  topic
+) {
+
+  const text =
+    String(questionText || '').toLowerCase();
+
 
   if (
     text.includes('temperature') ||
@@ -195,6 +491,7 @@ function getQuestionVisual(questionText, topic) {
     return visualSets.temperature;
   }
 
+
   if (
     text.includes('actuator') ||
     text.includes('motor') ||
@@ -203,6 +500,7 @@ function getQuestionVisual(questionText, topic) {
     return visualSets.actuator;
   }
 
+
   if (
     text.includes('sensor') ||
     text.includes('sensing') ||
@@ -210,6 +508,7 @@ function getQuestionVisual(questionText, topic) {
   ) {
     return visualSets.sensor;
   }
+
 
   if (
     text.includes('mqtt') ||
@@ -220,6 +519,7 @@ function getQuestionVisual(questionText, topic) {
     return visualSets.mqtt;
   }
 
+
   if (
     text.includes('http') ||
     text.includes('https')
@@ -227,33 +527,46 @@ function getQuestionVisual(questionText, topic) {
     return visualSets.http;
   }
 
+
   if (
     text.includes('plc') ||
-    text.includes('programmable logic controller')
+    text.includes(
+      'programmable logic controller'
+    )
   ) {
     return visualSets.plc;
   }
 
+
   if (
     text.includes('scada') ||
-    text.includes('supervisory control')
+    text.includes(
+      'supervisory control'
+    )
   ) {
     return visualSets.scada;
   }
 
+
   if (
     text.includes('edge') ||
-    text.includes('edge computing')
+    text.includes(
+      'edge computing'
+    )
   ) {
     return visualSets.edge;
   }
 
+
   if (
     text.includes('cloud') ||
-    text.includes('cloud computing')
+    text.includes(
+      'cloud computing'
+    )
   ) {
     return visualSets.cloud;
   }
+
 
   if (
     text.includes('encryption') ||
@@ -263,194 +576,415 @@ function getQuestionVisual(questionText, topic) {
     return visualSets.encryption;
   }
 
+
   if (
     text.includes('authentication') ||
-    text.includes('authenticate') ||
+    text.includes(
+      'authenticate'
+    ) ||
     text.includes('identity')
   ) {
     return visualSets.authentication;
   }
 
+
   return topic.flow;
 }
 
 
-/* =========================================================
-   QUIZ PAGE
-   ========================================================= */
+// =========================================================
+// QUIZ PAGE
+// =========================================================
 
 function QuizPage() {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
 
-  const quizId = searchParams.get('quizId') || '1';
+  const [searchParams] =
+    useSearchParams();
 
-  const [questions, setQuestions] = useState([]);
-  const [answers, setAnswers] = useState({});
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-
-  const topic = topicInfo[quizId] || topicInfo[1];
+  const navigate =
+    useNavigate();
 
 
-  /* =====================================================
-     LOAD QUIZ
-     ===================================================== */
+  const quizId =
+    searchParams.get('quizId') || '1';
+
+
+  const [questions, setQuestions] =
+    useState([]);
+
+  const [answers, setAnswers] =
+    useState({});
+
+  const [result, setResult] =
+    useState(null);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [currentQuestion, setCurrentQuestion] =
+    useState(0);
+
+  const [submitting, setSubmitting] =
+    useState(false);
+
+
+  const topic =
+    topicInfo[quizId] ||
+    topicInfo[1];
+
+
+  // =======================================================
+  // LOAD QUIZ
+  // =======================================================
 
   useEffect(() => {
+
     setLoading(true);
+
     setQuestions([]);
+
     setAnswers({});
+
     setResult(null);
+
     setCurrentQuestion(0);
+
 
     fetch(
       `http://localhost:5001/api/quiz?quizId=${quizId}`
     )
+
       .then((response) => {
+
         if (!response.ok) {
-          throw new Error('Failed to load quiz');
+
+          throw new Error(
+            'Failed to load quiz'
+          );
+
         }
 
         return response.json();
+
       })
+
       .then((data) => {
-        setQuestions(data);
+
+        setQuestions(
+          Array.isArray(data)
+            ? data
+            : []
+        );
+
         setLoading(false);
+
       })
+
       .catch((error) => {
+
         console.error(
           'Quiz loading error:',
           error
         );
 
         setLoading(false);
+
       });
+
   }, [quizId]);
 
 
-  /* =====================================================
-     SELECT ANSWER
-     ===================================================== */
+  // =======================================================
+  // SELECT ANSWER
+  // =======================================================
 
-  const handleAnswer = (questionId, answer) => {
-    setAnswers((previous) => ({
-      ...previous,
-      [questionId]: answer,
-    }));
+  const handleAnswer = (
+    questionId,
+    answer
+  ) => {
+
+    setAnswers(
+      (previous) => ({
+
+        ...previous,
+
+        [questionId]:
+          answer,
+
+      })
+    );
+
   };
 
 
-  /* =====================================================
-     COUNT UNANSWERED QUESTIONS
-     ===================================================== */
-
-  const getUnansweredCount = () => {
-    return questions.filter(
-      (question) => !answers[question.id]
-    ).length;
-  };
-
-
-  /* =====================================================
-     SUBMIT QUIZ
-     ===================================================== */
+  // =======================================================
+  // SUBMIT QUIZ
+  // =======================================================
 
   const submitQuiz = async () => {
-    const unansweredCount =
-      getUnansweredCount();
 
-    /* ---------------------------------------------------
-       WARN USER IF QUESTIONS ARE UNANSWERED
-       --------------------------------------------------- */
-
-    if (unansweredCount > 0) {
-      const shouldSubmit = window.confirm(
-        `You have ${unansweredCount} unanswered question${
-          unansweredCount > 1 ? 's' : ''
-        }.\n\nDo you still want to submit the quiz?`
-      );
-
-      if (!shouldSubmit) {
-        return;
-      }
+    if (submitting) {
+      return;
     }
 
+
     try {
-      const formattedAnswers =
-        questions.map((question) => ({
-          questionId: question.id,
-          selectedAnswer:
-            answers[question.id] || '',
-        }));
 
-      const response = await fetch(
-        `http://localhost:5001/api/quiz/submit?quizId=${quizId}`,
-        {
-          method: 'POST',
+      setSubmitting(true);
 
-          headers: {
-            'Content-Type': 'application/json',
-          },
 
-          body: JSON.stringify({
-            answers: formattedAnswers,
-          }),
+      // ---------------------------------------------------
+      // GET STUDENT NAME
+      // ---------------------------------------------------
+
+      const studentName =
+        localStorage.getItem(
+          'quizforge_student_name'
+        ) || '';
+
+
+      if (!studentName.trim()) {
+
+        alert(
+          'Please enter your name before submitting the quiz.'
+        );
+
+        setSubmitting(false);
+
+        return;
+
+      }
+
+
+      // ---------------------------------------------------
+      // GET STORED STUDENT ID
+      // ---------------------------------------------------
+
+      let studentId =
+        Number(
+          localStorage.getItem(
+            'quizforge_student_id'
+          )
+        ) || 0;
+
+
+      // ---------------------------------------------------
+      // CREATE / FIND STUDENT IF NEEDED
+      // ---------------------------------------------------
+
+      if (!studentId) {
+
+        const studentResponse =
+          await fetch(
+            'http://localhost:5001/api/students',
+            {
+              method: 'POST',
+
+              headers: {
+                'Content-Type':
+                  'application/json',
+              },
+
+              body: JSON.stringify({
+                name:
+                  studentName.trim(),
+              }),
+            }
+          );
+
+
+        if (!studentResponse.ok) {
+
+          const errorData =
+            await studentResponse
+              .json()
+              .catch(
+                () => ({})
+              );
+
+
+          throw new Error(
+            errorData.message ||
+              'Failed to save student'
+          );
+
         }
-      );
+
+
+        const student =
+          await studentResponse.json();
+
+
+        // =================================================
+        // IMPORTANT FIX
+        // Backend returns:
+        //
+        // {
+        //   studentId: 1,
+        //   studentName: "Ishank Verma"
+        // }
+        //
+        // So use student.studentId
+        // =================================================
+
+        studentId =
+          Number(
+            student.studentId
+          );
+
+
+        if (!studentId) {
+
+          throw new Error(
+            'Student ID was not returned by the server.'
+          );
+
+        }
+
+
+        localStorage.setItem(
+          'quizforge_student_id',
+          String(studentId)
+        );
+
+      }
+
+
+      // ---------------------------------------------------
+      // FORMAT ANSWERS
+      // ---------------------------------------------------
+
+      const formattedAnswers =
+        questions.map(
+          (question) => ({
+
+            questionId:
+              question.id,
+
+            selectedAnswer:
+              answers[
+                question.id
+              ] || '',
+
+          })
+        );
+
+
+      // ---------------------------------------------------
+      // SUBMIT TO BACKEND
+      // ---------------------------------------------------
+
+      const response =
+        await fetch(
+          `http://localhost:5001/api/quiz/submit?quizId=${quizId}`,
+          {
+            method: 'POST',
+
+            headers: {
+              'Content-Type':
+                'application/json',
+            },
+
+            body: JSON.stringify({
+
+              studentId:
+                studentId,
+
+              answers:
+                formattedAnswers,
+
+            }),
+
+          }
+        );
+
 
       if (!response.ok) {
+
+        const errorData =
+          await response
+            .json()
+            .catch(
+              () => ({})
+            );
+
+
         throw new Error(
-          'Failed to submit quiz'
+          errorData.message ||
+            'Failed to submit quiz'
         );
+
       }
+
 
       const data =
         await response.json();
 
+
+      // ---------------------------------------------------
+      // SAVE RESULT
+      // ---------------------------------------------------
+
       setResult(data);
+
 
       window.scrollTo({
         top: 0,
         behavior: 'smooth',
       });
 
+
     } catch (error) {
+
       console.error(
         'Quiz submission error:',
         error
       );
 
+
       alert(
-        'Unable to submit the quiz. Please make sure the backend server is running.'
+        error.message ||
+          'Unable to submit quiz. Please try again.'
       );
+
+
+    } finally {
+
+      setSubmitting(false);
+
     }
+
   };
 
 
-  /* =====================================================
-     RETAKE
-     ===================================================== */
+  // =======================================================
+  // RETAKE
+  // =======================================================
 
   const restartQuiz = () => {
+
     setAnswers({});
+
     setResult(null);
+
     setCurrentQuestion(0);
 
     window.scrollTo({
       top: 0,
       behavior: 'smooth',
     });
+
   };
 
 
-  /* =====================================================
-     LOADING
-     ===================================================== */
+  // =======================================================
+  // LOADING
+  // =======================================================
 
   if (loading) {
+
     return (
+
       <section className="quiz-page">
 
         <div className="quiz-container loading-container">
@@ -470,16 +1004,20 @@ function QuizPage() {
         </div>
 
       </section>
+
     );
+
   }
 
 
-  /* =====================================================
-     EMPTY
-     ===================================================== */
+  // =======================================================
+  // EMPTY
+  // =======================================================
 
   if (questions.length === 0) {
+
     return (
+
       <section className="quiz-page">
 
         <div className="quiz-container empty-container">
@@ -498,7 +1036,9 @@ function QuizPage() {
 
           <button
             className="submit-quiz"
-            onClick={() => navigate('/')}
+            onClick={() =>
+              navigate('/student/home')
+            }
           >
             🏠 Back to Home
           </button>
@@ -506,35 +1046,56 @@ function QuizPage() {
         </div>
 
       </section>
+
     );
+
   }
 
 
-  /* =====================================================
-     RESULT SCREEN
-     ===================================================== */
+  // =======================================================
+  // RESULT SCREEN
+  // =======================================================
 
   if (result) {
 
-    const correctCount = result.score;
+    const correctCount =
+      result.score;
+
     const wrongCount =
-      result.total - result.score;
+      result.total -
+      result.score;
+
 
     let performanceTitle =
       'Keep Practicing! 📚';
 
-    if (result.percentage >= 90) {
+
+    if (
+      result.percentage >= 90
+    ) {
+
       performanceTitle =
         'Outstanding Performance! 🏆';
-    } else if (result.percentage >= 80) {
+
+    } else if (
+      result.percentage >= 80
+    ) {
+
       performanceTitle =
         'Excellent Work! 🚀';
-    } else if (result.percentage >= 60) {
+
+    } else if (
+      result.percentage >= 60
+    ) {
+
       performanceTitle =
         'Good Job! 💪';
+
     }
 
+
     return (
+
       <section className="quiz-page">
 
         <div className="quiz-container result-container">
@@ -542,27 +1103,52 @@ function QuizPage() {
 
           {/* =================================================
               RESULT HERO
-              ================================================= */}
+          ================================================= */}
 
           <div className="result-hero">
 
             <div className="result-icon">
+
               {result.percentage >= 80
                 ? '🎉'
                 : '📚'}
+
             </div>
+
 
             <p className="result-label">
               QUIZ COMPLETED
             </p>
 
+
             <h1>
               {performanceTitle}
             </h1>
 
+
             <p className="result-topic">
-              {topic.icon} {topic.name}
+
+              {topic.icon}{' '}
+
+              {topic.name}
+
             </p>
+
+
+            {/* STUDENT NAME */}
+
+            <p className="result-student-name">
+
+              👤{' '}
+
+              {result.studentName ||
+                localStorage.getItem(
+                  'quizforge_student_name'
+                ) ||
+                'Student'}
+
+            </p>
+
 
             <div className="score-circle">
 
@@ -571,14 +1157,28 @@ function QuizPage() {
               </strong>
 
               <span>
-                {result.score} / {result.total}
+
+                {result.score} /{' '}
+
+                {result.total}
+
               </span>
 
             </div>
 
+
             <p className="result-message">
-              You answered {result.score} out of{' '}
-              {result.total} questions correctly.
+
+              You answered{' '}
+
+              {result.score}{' '}
+
+              out of{' '}
+
+              {result.total}{' '}
+
+              questions correctly.
+
             </p>
 
           </div>
@@ -586,7 +1186,7 @@ function QuizPage() {
 
           {/* =================================================
               SCORE SUMMARY
-              ================================================= */}
+          ================================================= */}
 
           <div className="score-summary">
 
@@ -657,7 +1257,7 @@ function QuizPage() {
 
           {/* =================================================
               PERFORMANCE ANALYSIS
-              ================================================= */}
+          ================================================= */}
 
           <div className="performance-section">
 
@@ -719,7 +1319,8 @@ function QuizPage() {
                 <div
                   className="performance-fill"
                   style={{
-                    width: `${result.percentage}%`,
+                    width:
+                      `${result.percentage}%`,
                   }}
                 />
 
@@ -775,6 +1376,7 @@ function QuizPage() {
               <div className="performance-message">
 
                 <strong>
+
                   {result.percentage >= 90
                     ? '🏆 Outstanding Performance'
                     : result.percentage >= 80
@@ -782,9 +1384,12 @@ function QuizPage() {
                     : result.percentage >= 60
                     ? '💪 Good Performance'
                     : '📚 Needs More Practice'}
+
                 </strong>
 
+
                 <p>
+
                   {result.percentage >= 90
                     ? 'Excellent understanding of this Industrial IoT topic.'
                     : result.percentage >= 80
@@ -792,6 +1397,7 @@ function QuizPage() {
                     : result.percentage >= 60
                     ? 'Good foundation. Review the explanations below to improve further.'
                     : 'Review the explanations and visual concepts below, then try the quiz again.'}
+
                 </p>
 
               </div>
@@ -803,7 +1409,7 @@ function QuizPage() {
 
           {/* =================================================
               QUICK CONCEPT REVIEW
-              ================================================= */}
+          ================================================= */}
 
           <div className="learning-section">
 
@@ -861,9 +1467,11 @@ function QuizPage() {
 
                     {index <
                       topic.flow.length - 1 && (
+
                       <div className="iot-arrow">
                         →
                       </div>
+
                     )}
 
                   </div>
@@ -878,7 +1486,7 @@ function QuizPage() {
 
           {/* =================================================
               ANSWER REVIEW
-              ================================================= */}
+          ================================================= */}
 
           <div className="review-section">
 
@@ -913,6 +1521,7 @@ function QuizPage() {
                       topic
                     );
 
+
                   return (
 
                     <div
@@ -921,9 +1530,10 @@ function QuizPage() {
                           ? 'review-card--correct'
                           : 'review-card--wrong'
                       }`}
-                      key={item.questionId}
+                      key={
+                        item.questionId
+                      }
                     >
-
 
                       {/* QUESTION HEADER */}
 
@@ -933,6 +1543,7 @@ function QuizPage() {
                           Question {index + 1}
                         </div>
 
+
                         <span
                           className={
                             item.isCorrect
@@ -940,9 +1551,11 @@ function QuizPage() {
                               : 'answer-status wrong'
                           }
                         >
+
                           {item.isCorrect
                             ? '✓ Correct'
                             : '✕ Wrong'}
+
                         </span>
 
                       </div>
@@ -951,7 +1564,9 @@ function QuizPage() {
                       {/* QUESTION */}
 
                       <h3 className="review-question">
+
                         {item.question}
+
                       </h3>
 
 
@@ -972,8 +1587,10 @@ function QuizPage() {
                           </span>
 
                           <strong>
+
                             {item.userAnswer ||
                               'Not answered'}
+
                           </strong>
 
                         </div>
@@ -986,7 +1603,9 @@ function QuizPage() {
                           </span>
 
                           <strong>
+
                             {item.correctAnswer}
+
                           </strong>
 
                         </div>
@@ -1015,7 +1634,7 @@ function QuizPage() {
                       </div>
 
 
-                      {/* QUESTION SPECIFIC VISUAL */}
+                      {/* QUESTION VISUAL */}
 
                       <div className="learning-section">
 
@@ -1076,9 +1695,11 @@ function QuizPage() {
 
                                 {visualIndex <
                                   questionVisual.length - 1 && (
+
                                   <div className="iot-arrow">
                                     →
                                   </div>
+
                                 )}
 
                               </div>
@@ -1096,7 +1717,9 @@ function QuizPage() {
                       <div className="question-visual">
 
                         <span className="question-visual__icon">
+
                           {topic.icon}
+
                         </span>
 
                         <div>
@@ -1114,7 +1737,9 @@ function QuizPage() {
                       </div>
 
                     </div>
+
                   );
+
                 }
               )}
 
@@ -1123,7 +1748,7 @@ function QuizPage() {
 
           {/* =================================================
               RESULT ACTIONS
-              ================================================= */}
+          ================================================= */}
 
           <div className="quiz-actions result-actions">
 
@@ -1134,11 +1759,24 @@ function QuizPage() {
               🔄 Retake Quiz
             </button>
 
+
             <button
               className="submit-quiz secondary-action"
-              onClick={() => navigate('/')}
+              onClick={() =>
+                navigate('/student/home')
+              }
             >
               🏠 Back to Home
+            </button>
+
+
+            <button
+              className="submit-quiz secondary-action"
+              onClick={() =>
+                navigate('/history')
+              }
+            >
+              📚 View History
             </button>
 
           </div>
@@ -1146,23 +1784,26 @@ function QuizPage() {
         </div>
 
       </section>
+
     );
+
   }
 
 
-  /* =====================================================
-     CURRENT QUESTION
-     ===================================================== */
+  // =======================================================
+  // CURRENT QUESTION
+  // =======================================================
 
   const question =
     questions[currentQuestion];
 
 
-  /* =====================================================
-     QUIZ SCREEN
-     ===================================================== */
+  // =======================================================
+  // QUIZ SCREEN
+  // =======================================================
 
   return (
+
     <section className="quiz-page">
 
       <div className="quiz-container">
@@ -1175,16 +1816,41 @@ function QuizPage() {
         <div className="quiz-header">
 
           <span className="quiz-topic-badge">
-            {topic.icon} {topic.name}
+
+            {topic.icon}{' '}
+
+            {topic.name}
+
           </span>
+
 
           <h2>
             Industrial IoT Quiz
           </h2>
 
+
           <p className="quiz-subtitle">
-            Test your {topic.name} knowledge.
+
+            Test your{' '}
+
+            {topic.name}{' '}
+
+            knowledge.
+
           </p>
+
+
+          {/* STUDENT NAME */}
+
+          <div className="quiz-student-display">
+
+            👤{' '}
+
+            {localStorage.getItem(
+              'quizforge_student_name'
+            ) || 'Student'}
+
+          </div>
 
         </div>
 
@@ -1198,17 +1864,30 @@ function QuizPage() {
           <div className="quiz-progress-text">
 
             <span>
-              Question {currentQuestion + 1} of{' '}
+
+              Question{' '}
+
+              {currentQuestion + 1}{' '}
+
+              of{' '}
+
               {questions.length}
+
             </span>
 
+
             <strong>
+
               {Math.round(
-                ((currentQuestion + 1) /
-                  questions.length) *
+                (
+                  (currentQuestion + 1) /
+                  questions.length
+                ) *
                   100
               )}
+
               %
+
             </strong>
 
           </div>
@@ -1219,11 +1898,14 @@ function QuizPage() {
             <div
               className="quiz-progress-fill"
               style={{
-                width: `${
-                  ((currentQuestion + 1) /
-                    questions.length) *
-                  100
-                }%`,
+                width:
+                  `${
+                    (
+                      (currentQuestion + 1) /
+                      questions.length
+                    ) *
+                    100
+                  }%`,
               }}
             />
 
@@ -1239,12 +1921,20 @@ function QuizPage() {
         <div className="question-card">
 
           <div className="question-card__number">
-            QUESTION {currentQuestion + 1}
+
+            QUESTION{' '}
+
+            {currentQuestion + 1}
+
           </div>
 
+
           <h3>
+
             {currentQuestion + 1}.{' '}
+
             {question.question}
+
           </h3>
 
 
@@ -1258,8 +1948,9 @@ function QuizPage() {
                 <label
                   key={option}
                   className={`option ${
-                    answers[question.id] ===
-                    option
+                    answers[
+                      question.id
+                    ] === option
                       ? 'option--selected'
                       : ''
                   }`}
@@ -1269,8 +1960,9 @@ function QuizPage() {
                     type="radio"
                     name={`question-${question.id}`}
                     checked={
-                      answers[question.id] ===
-                      option
+                      answers[
+                        question.id
+                      ] === option
                     }
                     onChange={() =>
                       handleAnswer(
@@ -1280,14 +1972,20 @@ function QuizPage() {
                     }
                   />
 
+
                   <span className="option-letter">
+
                     {String.fromCharCode(
                       65 + index
                     )}
+
                   </span>
 
+
                   <span className="option-text">
+
                     {option}
+
                   </span>
 
                 </label>
@@ -1305,6 +2003,7 @@ function QuizPage() {
             ================================================= */}
 
         <div className="quiz-actions">
+
 
           {currentQuestion > 0 && (
 
@@ -1341,10 +2040,13 @@ function QuizPage() {
             <button
               className="submit-quiz"
               onClick={submitQuiz}
+              disabled={submitting}
             >
-              {getUnansweredCount() > 0
-                ? `Submit Quiz (${getUnansweredCount()} unanswered)`
+
+              {submitting
+                ? 'Submitting...'
                 : 'Submit Quiz ✓'}
+
             </button>
 
           )}
@@ -1354,7 +2056,10 @@ function QuizPage() {
       </div>
 
     </section>
+
   );
+
 }
+
 
 export default QuizPage;

@@ -1,0 +1,512 @@
+/* =========================================================
+   RESULT PAGE
+   ========================================================= */
+
+.result-page {
+  min-height: 100vh;
+  padding: 100px 24px 80px;
+  background:
+    radial-gradient(
+      circle at top,
+      rgba(0, 217, 255, 0.08),
+      transparent 35%
+    ),
+    #07111f;
+  color: #f5faff;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.result-header {
+  max-width: 1000px;
+  margin: 0 auto 40px;
+  text-align: center;
+}
+
+.result-badge,
+.result-review-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border: 1px solid #1d405c;
+  border-radius: 999px;
+  background: rgba(0, 217, 255, 0.08);
+  color: #00d9ff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.result-header h1 {
+  margin: 18px 0 8px;
+  font-size: clamp(36px, 5vw, 58px);
+}
+
+.result-header p {
+  color: #9fb3c8;
+  font-size: 18px;
+}
+
+.result-header strong {
+  color: #00d9ff;
+}
+
+
+/* =========================================================
+   SCORE CARD
+   ========================================================= */
+
+.result-score-card {
+  max-width: 1000px;
+  margin: 0 auto 30px;
+  padding: 35px;
+  display: flex;
+  align-items: center;
+  gap: 45px;
+  border: 1px solid #1d405c;
+  border-radius: 24px;
+  background: #10243a;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.25),
+    0 0 35px rgba(0, 217, 255, 0.06);
+}
+
+
+/* SCORE CIRCLE */
+
+.result-score-circle {
+  min-width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  border: 8px solid #00d9ff;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(0, 217, 255, 0.12),
+      #0b1728
+    );
+
+  box-shadow:
+    0 0 35px rgba(0, 217, 255, 0.2);
+}
+
+.result-score-percentage {
+  font-size: 46px;
+  font-weight: 800;
+  color: #f5faff;
+}
+
+.result-score-circle span {
+  color: #9fb3c8;
+  font-size: 14px;
+}
+
+
+/* CONTENT */
+
+.result-score-content {
+  flex: 1;
+}
+
+.result-performance-icon {
+  font-size: 42px;
+  margin-bottom: 10px;
+}
+
+.result-score-content h2 {
+  margin: 0 0 12px;
+  font-size: 26px;
+}
+
+.result-score-content p {
+  margin: 0;
+  color: #9fb3c8;
+  line-height: 1.7;
+}
+
+.result-score-content strong {
+  color: #00d9ff;
+}
+
+
+/* =========================================================
+   STATISTICS
+   ========================================================= */
+
+.result-stats {
+  max-width: 1000px;
+  margin: 0 auto 35px;
+
+  display: grid;
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 18px;
+}
+
+.result-stat {
+  padding: 24px 18px;
+  text-align: center;
+
+  background: #10243a;
+  border: 1px solid #1d405c;
+  border-radius: 18px;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.result-stat:hover {
+  transform: translateY(-4px);
+  border-color: #00d9ff;
+}
+
+.result-stat-icon {
+  font-size: 25px;
+  margin-bottom: 10px;
+}
+
+.result-stat strong {
+  display: block;
+  font-size: 30px;
+  color: #f5faff;
+}
+
+.result-stat span {
+  display: block;
+  margin-top: 5px;
+  color: #9fb3c8;
+  font-size: 13px;
+}
+
+.result-stat-correct strong {
+  color: #00d9ff;
+}
+
+.result-stat-wrong strong {
+  color: #ff6b6b;
+}
+
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.result-actions {
+  max-width: 1000px;
+  margin: 0 auto 70px;
+
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.result-actions button {
+  padding: 14px 25px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.result-retry-button {
+  border: none;
+  color: #07111f;
+  background: linear-gradient(
+    135deg,
+    #00d9ff,
+    #2563eb
+  );
+}
+
+.result-retry-button:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 10px 25px rgba(0, 217, 255, 0.2);
+}
+
+.result-home-button {
+  border: 1px solid #1d405c;
+  color: #f5faff;
+  background: transparent;
+}
+
+.result-home-button:hover {
+  border-color: #00d9ff;
+  color: #00d9ff;
+}
+
+
+/* =========================================================
+   REVIEW
+   ========================================================= */
+
+.result-review {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.result-review-header {
+  margin-bottom: 25px;
+}
+
+.result-review-header h2 {
+  margin: 15px 0 8px;
+  font-size: 30px;
+}
+
+.result-review-header p {
+  margin: 0;
+  color: #9fb3c8;
+}
+
+
+/* =========================================================
+   REVIEW ITEMS
+   ========================================================= */
+
+.result-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.result-review-item {
+  padding: 25px;
+
+  border-radius: 18px;
+  background: #10243a;
+
+  border: 1px solid #1d405c;
+}
+
+.result-review-item.correct {
+  border-left: 4px solid #00d9ff;
+}
+
+.result-review-item.wrong {
+  border-left: 4px solid #ff6b6b;
+}
+
+
+/* QUESTION */
+
+.result-question-header {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+}
+
+.result-question-number {
+  width: 38px;
+  height: 38px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background: #0b1728;
+
+  font-weight: 800;
+}
+
+.correct .result-question-number {
+  color: #00d9ff;
+}
+
+.wrong .result-question-number {
+  color: #ff6b6b;
+}
+
+.result-question-header span {
+  color: #60758a;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.result-question-header h3 {
+  margin: 5px 0 0;
+  font-size: 19px;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   ANSWER BOX
+   ========================================================= */
+
+.result-answer-box {
+  margin-top: 20px;
+  padding: 16px;
+
+  border-radius: 12px;
+
+  background: #0b1728;
+  border: 1px solid #1d405c;
+}
+
+.result-answer-label {
+  display: block;
+  margin-bottom: 7px;
+
+  color: #60758a;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.result-answer-box p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.correct-answer {
+  color: #00d9ff;
+}
+
+.wrong-answer {
+  color: #ff6b6b;
+}
+
+
+/* =========================================================
+   EXPLANATION
+   ========================================================= */
+
+.result-explanation {
+  margin-top: 20px;
+  padding: 17px;
+
+  border-radius: 12px;
+
+  background: rgba(0, 217, 255, 0.05);
+  border: 1px solid rgba(0, 217, 255, 0.15);
+}
+
+.result-explanation span {
+  color: #00d9ff;
+  font-weight: 700;
+}
+
+.result-explanation p {
+  margin: 8px 0 0;
+
+  color: #9fb3c8;
+  line-height: 1.7;
+}
+
+
+/* =========================================================
+   EMPTY
+   ========================================================= */
+
+.result-empty {
+  max-width: 600px;
+  margin: 120px auto;
+  padding: 45px;
+
+  text-align: center;
+
+  background: #10243a;
+  border: 1px solid #1d405c;
+  border-radius: 22px;
+}
+
+.result-empty-icon {
+  font-size: 55px;
+}
+
+.result-empty h1 {
+  margin: 15px 0 10px;
+}
+
+.result-empty p {
+  color: #9fb3c8;
+}
+
+.result-empty button {
+  margin-top: 20px;
+  padding: 13px 22px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: linear-gradient(
+    135deg,
+    #00d9ff,
+    #2563eb
+  );
+
+  color: #07111f;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 800px) {
+
+  .result-score-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .result-stats {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+}
+
+
+@media (max-width: 500px) {
+
+  .result-page {
+    padding: 80px 15px 50px;
+  }
+
+  .result-score-card {
+    padding: 25px 18px;
+  }
+
+  .result-score-circle {
+    min-width: 150px;
+    height: 150px;
+  }
+
+  .result-score-percentage {
+    font-size: 38px;
+  }
+
+  .result-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .result-actions {
+    flex-direction: column;
+  }
+
+  .result-actions button {
+    width: 100%;
+  }
+
+}

@@ -9,71 +9,147 @@ import Footer from '../components/Footer';
 import './HomePage.css';
 
 function HomePage() {
+
   const [showExplore, setShowExplore] = useState(false);
 
   const [performance, setPerformance] = useState(null);
   const [history, setHistory] = useState([]);
 
-  const [performanceLoading, setPerformanceLoading] = useState(true);
+  const [performanceLoading, setPerformanceLoading] =
+    useState(true);
 
-  /* =========================================================
-     EXPLORE
-     ========================================================= */
+  // =========================================================
+  // STUDENT INFORMATION
+  // =========================================================
+
+  const studentName =
+    localStorage.getItem(
+      'quizforge_student_name'
+    ) || 'Student';
+
+
+  const studentId =
+    localStorage.getItem(
+      'quizforge_student_id'
+    );
+
+
+  // =========================================================
+  // EXPLORE
+  // =========================================================
 
   const handleExplore = () => {
+
     setShowExplore(true);
 
     setTimeout(() => {
-      document.getElementById('explore')?.scrollIntoView({
-        behavior: 'smooth',
-      });
+
+      document
+        .getElementById('explore')
+        ?.scrollIntoView({
+          behavior: 'smooth',
+        });
+
     }, 50);
+
   };
 
-  /* =========================================================
-     LOAD PERFORMANCE + HISTORY
-     ========================================================= */
+
+  // =========================================================
+  // LOAD STUDENT PERFORMANCE
+  // =========================================================
 
   useEffect(() => {
+
     const loadPerformance = async () => {
+
+      // -----------------------------------------------------
+      // CHECK STUDENT ID
+      // -----------------------------------------------------
+
+      if (!studentId) {
+
+        console.warn(
+          'No student ID found in localStorage.'
+        );
+
+        setPerformance({
+          totalAttempts: 0,
+          averageScore: 0,
+          bestScore: 0,
+          totalCorrect: 0,
+          totalQuestions: 0,
+        });
+
+        setHistory([]);
+
+        setPerformanceLoading(false);
+
+        return;
+      }
+
+
       try {
+
         setPerformanceLoading(true);
+
+
+        // ---------------------------------------------------
+        // STUDENT-SPECIFIC API REQUESTS
+        // ---------------------------------------------------
 
         const [
           performanceResponse,
           historyResponse,
         ] = await Promise.all([
+
           fetch(
-            'http://localhost:5001/api/quiz/performance'
+            `http://localhost:5001/api/quiz/performance?studentId=${studentId}`
           ),
 
           fetch(
-            'http://localhost:5001/api/quiz/history'
+            `http://localhost:5001/api/quiz/history?studentId=${studentId}`
           ),
+
         ]);
 
-        /* ---------------------------------------------------
-           PERFORMANCE
-           --------------------------------------------------- */
+
+        // ---------------------------------------------------
+        // PERFORMANCE
+        // ---------------------------------------------------
 
         if (performanceResponse.ok) {
+
           const performanceData =
             await performanceResponse.json();
 
-          setPerformance(performanceData);
-        } else {
-          console.error(
-            'Failed to load performance data'
+          setPerformance(
+            performanceData
           );
 
-          setPerformance(null);
+        } else {
+
+          console.error(
+            'Failed to load student performance'
+          );
+
+          setPerformance({
+            totalAttempts: 0,
+            averageScore: 0,
+            bestScore: 0,
+            totalCorrect: 0,
+            totalQuestions: 0,
+          });
+
         }
 
-        /* ---------------------------------------------------
-           HISTORY
-           --------------------------------------------------- */
+
+        // ---------------------------------------------------
+        // HISTORY
+        // ---------------------------------------------------
 
         if (historyResponse.ok) {
+
           const historyData =
             await historyResponse.json();
 
@@ -82,67 +158,90 @@ function HomePage() {
               ? historyData
               : []
           );
+
         } else {
+
           console.error(
-            'Failed to load quiz history'
+            'Failed to load student history'
           );
 
           setHistory([]);
+
         }
+
       } catch (error) {
+
         console.error(
-          'Performance loading error:',
+          'Student performance loading error:',
           error
         );
 
-        setPerformance(null);
+        setPerformance({
+          totalAttempts: 0,
+          averageScore: 0,
+          bestScore: 0,
+          totalCorrect: 0,
+          totalQuestions: 0,
+        });
+
         setHistory([]);
+
       } finally {
+
         setPerformanceLoading(false);
+
       }
+
     };
 
+
     loadPerformance();
-  }, []);
 
-  /* =========================================================
-     SAFE VALUES
-     ========================================================= */
+  }, [studentId]);
 
-  const averageScore = Math.min(
-    Math.max(
-      Number(performance?.averageScore) || 0,
-      0
-    ),
-    100
-  );
-
-  const bestScore = Math.min(
-    Math.max(
-      Number(performance?.bestScore) || 0,
-      0
-    ),
-    100
-  );
-
-  const totalAttempts =
-    Number(performance?.totalAttempts) || 0;
-
-  const totalCorrect =
-    Number(performance?.totalCorrect) || 0;
-
-  const totalQuestions =
-    Number(performance?.totalQuestions) || 0;
-
-  /* =========================================================
-     PAGE
-     ========================================================= */
 
   return (
     <>
       <Navbar />
 
+
       <main>
+
+        {/* =====================================================
+            STUDENT WELCOME
+            ===================================================== */}
+
+        <section className="student-welcome">
+
+          <div className="student-welcome-container">
+
+            <span className="student-welcome-badge">
+              👨‍🎓 STUDENT PORTAL
+            </span>
+
+
+            <h1>
+
+              Welcome,{' '}
+
+              <span>
+                {studentName}
+              </span>
+
+              {' '}👋
+
+            </h1>
+
+
+            <p>
+              Continue your Industrial IoT learning
+              journey and improve your quiz performance.
+            </p>
+
+          </div>
+
+        </section>
+
 
         {/* =====================================================
             HERO
@@ -170,28 +269,40 @@ function HomePage() {
 
           <div className="home-performance-container">
 
+
             {/* =================================================
-                PERFORMANCE HEADER
+                HEADER
                 ================================================= */}
 
             <div className="home-performance-header">
 
               <div className="home-performance-badge">
-                📊 YOUR PERFORMANCE
+
+                📊{' '}
+
+                {studentName.toUpperCase()}
+
+                {' '}PERFORMANCE
+
               </div>
 
+
               <h2>
+
                 Track Your{' '}
+
                 <span>
                   Industrial IoT
-                </span>{' '}
-                Progress
+                </span>
+
+                {' '}Progress
+
               </h2>
 
+
               <p>
-                Monitor your quiz attempts,
-                scores, and learning progress
-                in one place.
+                Monitor your quiz attempts, scores,
+                and learning progress in one place.
               </p>
 
             </div>
@@ -219,11 +330,13 @@ function HomePage() {
 
               <>
 
+
                 {/* =================================================
                     PERFORMANCE CARDS
                     ================================================= */}
 
                 <div className="home-performance-grid">
+
 
                   {/* TOTAL ATTEMPTS */}
 
@@ -236,7 +349,7 @@ function HomePage() {
                     <div>
 
                       <strong>
-                        {totalAttempts}
+                        {performance.totalAttempts ?? 0}
                       </strong>
 
                       <span>
@@ -259,7 +372,7 @@ function HomePage() {
                     <div>
 
                       <strong>
-                        {averageScore}%
+                        {performance.averageScore ?? 0}%
                       </strong>
 
                       <span>
@@ -282,7 +395,7 @@ function HomePage() {
                     <div>
 
                       <strong>
-                        {bestScore}%
+                        {performance.bestScore ?? 0}%
                       </strong>
 
                       <span>
@@ -305,7 +418,7 @@ function HomePage() {
                     <div>
 
                       <strong>
-                        {totalCorrect}
+                        {performance.totalCorrect ?? 0}
                       </strong>
 
                       <span>
@@ -334,44 +447,59 @@ function HomePage() {
                       </h3>
 
                       <p>
-                        Based on all your completed
-                        quizzes.
+                        Based on all your completed quizzes.
                       </p>
 
                     </div>
 
+
                     <strong>
-                      {averageScore}%
+                      {performance.averageScore ?? 0}%
                     </strong>
 
                   </div>
 
 
-                  {/* PROGRESS BAR */}
-
                   <div className="home-performance-progress">
 
                     <div
                       style={{
-                        width: `${averageScore}%`,
+                        width: `${Math.min(
+                          Math.max(
+                            Number(
+                              performance.averageScore
+                            ) || 0,
+                            0
+                          ),
+                          100
+                        )}%`,
                       }}
                     />
 
                   </div>
 
 
-                  {/* PROGRESS STATS */}
-
                   <div className="home-performance-overview-stats">
 
                     <span>
-                      🎯 {totalCorrect}{' '}
-                      correct answers
+
+                      🎯{' '}
+
+                      {performance.totalCorrect ?? 0}
+
+                      {' '}correct answers
+
                     </span>
 
+
                     <span>
-                      📚 {totalQuestions}{' '}
-                      questions attempted
+
+                      📚{' '}
+
+                      {performance.totalQuestions ?? 0}
+
+                      {' '}questions attempted
+
                     </span>
 
                   </div>
@@ -380,7 +508,7 @@ function HomePage() {
 
 
                 {/* =================================================
-                    RECENT QUIZ HISTORY
+                    RECENT HISTORY
                     ================================================= */}
 
                 <div className="home-history">
@@ -390,12 +518,11 @@ function HomePage() {
                     <div>
 
                       <h3>
-                        Recent Quiz Attempts
+                        {studentName}'s Recent Quiz Attempts
                       </h3>
 
                       <p>
-                        Your latest Industrial IoT
-                        assessments.
+                        Your latest Industrial IoT assessments.
                       </p>
 
                     </div>
@@ -403,91 +530,89 @@ function HomePage() {
                   </div>
 
 
-                  {/* HISTORY EXISTS */}
-
                   {history.length > 0 ? (
 
                     <div className="home-history-list">
 
                       {history
                         .slice(0, 5)
-                        .map((attempt) => {
+                        .map((attempt) => (
 
-                          const percentage = Math.min(
-                            Math.max(
-                              Number(
-                                attempt.percentage
-                              ) || 0,
-                              0
-                            ),
-                            100
-                          );
+                          <div
+                            className="home-history-item"
+                            key={attempt.id}
+                          >
 
-                          return (
 
-                            <div
-                              className="home-history-item"
-                              key={attempt.id}
-                            >
+                            {/* LEFT */}
 
-                              {/* LEFT */}
+                            <div className="home-history-left">
 
-                              <div className="home-history-left">
-
-                                <div className="home-history-icon">
-                                  📊
-                                </div>
-
-                                <div>
-
-                                  <strong>
-                                    {attempt.topic ||
-                                      `Quiz ${attempt.quiz_id}`}
-                                  </strong>
-
-                                  <span>
-                                    {attempt.score}/
-                                    {attempt.total_questions}{' '}
-                                    correct
-                                  </span>
-
-                                </div>
-
+                              <div className="home-history-icon">
+                                📊
                               </div>
 
 
-                              {/* RIGHT */}
-
-                              <div className="home-history-right">
+                              <div>
 
                                 <strong>
-                                  {percentage}%
+
+                                  {attempt.topic ||
+                                    `Quiz ${attempt.quiz_id}`}
+
                                 </strong>
 
-                                <div className="home-history-bar">
 
-                                  <div
-                                    style={{
-                                      width: `${percentage}%`,
-                                    }}
-                                  />
+                                <span>
 
-                                </div>
+                                  {attempt.score}/
+                                  {attempt.total_questions}
+
+                                  {' '}correct
+
+                                </span>
 
                               </div>
 
                             </div>
 
-                          );
-                        })}
+
+                            {/* RIGHT */}
+
+                            <div className="home-history-right">
+
+                              <strong>
+                                {attempt.percentage}%
+                              </strong>
+
+
+                              <div className="home-history-bar">
+
+                                <div
+                                  style={{
+                                    width: `${Math.min(
+                                      Math.max(
+                                        Number(
+                                          attempt.percentage
+                                        ) || 0,
+                                        0
+                                      ),
+                                      100
+                                    )}%`,
+                                  }}
+                                />
+
+                              </div>
+
+                            </div>
+
+                          </div>
+
+                        ))}
 
                     </div>
 
                   ) : (
-
-                    /* =================================================
-                       NO HISTORY
-                       ================================================= */
 
                     <div className="home-history-empty">
 
@@ -495,14 +620,15 @@ function HomePage() {
                         📝
                       </span>
 
+
                       <h4>
                         No quiz attempts yet
                       </h4>
 
+
                       <p>
-                        Complete your first quiz
-                        to start tracking your
-                        progress.
+                        Complete your first quiz to
+                        start tracking your progress.
                       </p>
 
                     </div>
@@ -515,24 +641,21 @@ function HomePage() {
 
             ) : (
 
-              /* =================================================
-                 NO PERFORMANCE
-                 ================================================= */
-
               <div className="home-performance-empty">
 
                 <div>
                   📊
                 </div>
 
+
                 <h3>
                   Start Your Learning Journey
                 </h3>
 
+
                 <p>
-                  Complete a quiz and your
-                  performance statistics
-                  will appear here.
+                  Complete a quiz and your performance
+                  statistics will appear here.
                 </p>
 
               </div>
@@ -552,10 +675,6 @@ function HomePage() {
 
       </main>
 
-
-      {/* =======================================================
-          FOOTER
-          ======================================================= */}
 
       <Footer />
 
