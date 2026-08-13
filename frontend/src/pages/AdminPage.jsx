@@ -1,87 +1,147 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import API_BASE_URL from '../api';
+
 import './AdminPage.css';
 
+
+// =========================================================
+// QUIZFORGE ADMIN DASHBOARD
+// =========================================================
+
 function AdminPage() {
+
   const navigate = useNavigate();
 
-  const [activeSection, setActiveSection] = useState('dashboard');
 
-  const [results, setResults] = useState([]);
-  const [performance, setPerformance] = useState(null);
+  // =========================================================
+  // STATE
+  // =========================================================
 
-  const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] =
+    useState('dashboard');
 
-  const [showCreateQuiz, setShowCreateQuiz] = useState(false);
+  const [results, setResults] =
+    useState([]);
 
-const [quizTitle, setQuizTitle] = useState('');
-const [quizDescription, setQuizDescription] = useState('');
+  const [performance, setPerformance] =
+    useState(null);
 
-const [newQuestions, setNewQuestions] = useState([
-  {
-    question: '',
-    options: ['', '', '', ''],
-    correct_answer: 0,
-  },
-]);
+  const [loading, setLoading] =
+    useState(true);
 
-const [createQuizLoading, setCreateQuizLoading] = useState(false);
-const [createQuizMessage, setCreateQuizMessage] = useState('');
-const [createQuizError, setCreateQuizError] = useState('');
+  const [showCreateQuiz, setShowCreateQuiz] =
+    useState(false);
 
-  /* =========================================================
-     LOAD ADMIN DATA
-     ========================================================= */
+
+  // =========================================================
+  // CREATE QUIZ STATE
+  // =========================================================
+
+  const [quizTitle, setQuizTitle] =
+    useState('');
+
+  const [quizDescription, setQuizDescription] =
+    useState('');
+
+  const [newQuestions, setNewQuestions] =
+    useState([
+      {
+        question: '',
+        options: ['', '', '', ''],
+        correct_answer: 0,
+      },
+    ]);
+
+  const [createQuizLoading, setCreateQuizLoading] =
+    useState(false);
+
+  const [createQuizMessage, setCreateQuizMessage] =
+    useState('');
+
+  const [createQuizError, setCreateQuizError] =
+    useState('');
+
+
+  // =========================================================
+  // LOAD ADMIN DATA
+  // =========================================================
 
   const loadAdminData = async () => {
+
     try {
+
       setLoading(true);
 
-      const [resultsResponse, performanceResponse] =
-        await Promise.all([
-          fetch('http://localhost:5001/api/admin/results'),
-          fetch('http://localhost:5001/api/quiz/performance'),
-        ]);
 
-      /* =====================================================
-         STUDENT RESULTS
-         ===================================================== */
+      const [
+        resultsResponse,
+        performanceResponse,
+      ] = await Promise.all([
+
+        fetch(
+          `${API_BASE_URL}/api/admin/results`
+        ),
+
+        fetch(
+          `${API_BASE_URL}/api/quiz/performance`
+        ),
+
+      ]);
+
+
+      // =====================================================
+      // STUDENT RESULTS
+      // =====================================================
 
       if (resultsResponse.ok) {
-        const resultsData = await resultsResponse.json();
+
+        const resultsData =
+          await resultsResponse.json();
 
         setResults(
           Array.isArray(resultsData)
             ? resultsData
             : []
         );
+
       } else {
+
         console.error(
           'Failed to fetch admin results'
         );
 
         setResults([]);
+
       }
 
-      /* =====================================================
-         PERFORMANCE
-         ===================================================== */
+
+      // =====================================================
+      // PERFORMANCE
+      // =====================================================
 
       if (performanceResponse.ok) {
+
         const performanceData =
           await performanceResponse.json();
 
-        setPerformance(performanceData);
+        setPerformance(
+          performanceData
+        );
+
       } else {
+
         console.error(
-          'Failed to fetch performance'
+          'Failed to fetch admin performance'
         );
 
         setPerformance(null);
+
       }
 
     } catch (error) {
+
       console.error(
         'Admin data loading error:',
         error
@@ -91,133 +151,248 @@ const [createQuizError, setCreateQuizError] = useState('');
       setPerformance(null);
 
     } finally {
+
       setLoading(false);
+
     }
+
   };
 
 
-  /* =========================================================
-     INITIAL LOAD
-     ========================================================= */
+  // =========================================================
+  // INITIAL LOAD
+  // =========================================================
 
   useEffect(() => {
+
     loadAdminData();
+
   }, []);
 
 
-  /* =========================================================
-     REFRESH
-     ========================================================= */
+  // =========================================================
+  // REFRESH
+  // =========================================================
 
   const refreshData = async () => {
+
     await loadAdminData();
+
   };
 
-/* =========================================================
-     CREATE QUIZ
-     ========================================================= */
 
-  const createQuiz = async () => {
+  // =========================================================
+  // RESET CREATE QUIZ FORM
+  // =========================================================
+
+  const resetCreateQuizForm = () => {
+
+    setQuizTitle('');
+
+    setQuizDescription('');
+
+    setNewQuestions([
+      {
+        question: '',
+        options: ['', '', '', ''],
+        correct_answer: 0,
+      },
+    ]);
+
     setCreateQuizMessage('');
+
     setCreateQuizError('');
 
-    // -------------------------------------------------------
+  };
+
+
+  // =========================================================
+  // OPEN CREATE QUIZ
+  // =========================================================
+
+  const openCreateQuiz = () => {
+
+    setShowCreateQuiz(true);
+
+    setActiveSection('create');
+
+    setCreateQuizMessage('');
+
+    setCreateQuizError('');
+
+  };
+
+
+  // =========================================================
+  // CLOSE CREATE QUIZ
+  // =========================================================
+
+  const closeCreateQuiz = () => {
+
+    setShowCreateQuiz(false);
+
+    setActiveSection('dashboard');
+
+    resetCreateQuizForm();
+
+  };
+
+
+  // =========================================================
+  // CREATE QUIZ
+  // =========================================================
+
+  const createQuiz = async () => {
+
+    setCreateQuizMessage('');
+
+    setCreateQuizError('');
+
+
+    // =====================================================
     // VALIDATE TITLE
-    // -------------------------------------------------------
+    // =====================================================
 
     if (!quizTitle.trim()) {
-      setCreateQuizError('Please enter a quiz title.');
+
+      setCreateQuizError(
+        'Please enter a quiz title.'
+      );
+
       return;
+
     }
 
-    // -------------------------------------------------------
-    // VALIDATE QUESTIONS
-    // -------------------------------------------------------
 
-    for (let i = 0; i < newQuestions.length; i++) {
-      const item = newQuestions[i];
+    // =====================================================
+    // VALIDATE QUESTIONS
+    // =====================================================
+
+    for (
+      let i = 0;
+      i < newQuestions.length;
+      i++
+    ) {
+
+      const item =
+        newQuestions[i];
+
 
       if (!item.question.trim()) {
+
         setCreateQuizError(
           `Please enter Question ${i + 1}.`
         );
+
         return;
+
       }
+
 
       if (
         item.options.some(
-          (option) => !option.trim()
+          (option) =>
+            !option.trim()
         )
       ) {
+
         setCreateQuizError(
           `Please fill all 4 options for Question ${i + 1}.`
         );
+
         return;
+
       }
+
     }
 
+
     try {
+
       setCreateQuizLoading(true);
 
-      const response = await fetch(
-        'http://localhost:5001/api/admin/quizzes',
-        {
-          method: 'POST',
 
-          headers: {
-            'Content-Type': 'application/json',
-          },
+      const response =
+        await fetch(
+          `${API_BASE_URL}/api/admin/quizzes`,
+          {
+            method: 'POST',
 
-          body: JSON.stringify({
-            title: quizTitle.trim(),
+            headers: {
+              'Content-Type':
+                'application/json',
+            },
 
-            description:
-              quizDescription.trim(),
+            body: JSON.stringify({
 
-            questions: newQuestions.map(
-              (item) => ({
-                question:
-                  item.question.trim(),
+              title:
+                quizTitle.trim(),
 
-                options:
-                  item.options.map(
-                    (option) =>
-                      option.trim()
-                  ),
+              description:
+                quizDescription.trim(),
 
-                correct_answer:
-                  Number(
-                    item.correct_answer
-                  ),
-              })
-            ),
-          }),
-        }
-      );
+              questions:
+                newQuestions.map(
+                  (item) => ({
+
+                    question:
+                      item.question.trim(),
+
+                    options:
+                      item.options.map(
+                        (option) =>
+                          option.trim()
+                      ),
+
+                    correct_answer:
+                      Number(
+                        item.correct_answer
+                      ),
+
+                  })
+                ),
+
+            }),
+
+          }
+        );
+
 
       const data =
-        await response.json();
+        await response
+          .json()
+          .catch(
+            () => ({})
+          );
+
 
       if (!response.ok) {
+
         throw new Error(
           data.message ||
-          'Failed to create quiz'
+          'Failed to create quiz.'
         );
+
       }
 
-      // -----------------------------------------------------
+
+      // =====================================================
       // SUCCESS
-      // -----------------------------------------------------
+      // =====================================================
 
       setCreateQuizMessage(
-        `Quiz "${data.quiz.title}" created successfully!`
+        data.quiz?.title
+          ? `Quiz "${data.quiz.title}" created successfully!`
+          : 'Quiz created successfully!'
       );
 
-      // -----------------------------------------------------
+
+      // =====================================================
       // RESET FORM
-      // -----------------------------------------------------
+      // =====================================================
 
       setQuizTitle('');
+
       setQuizDescription('');
 
       setNewQuestions([
@@ -228,9 +403,10 @@ const [createQuizError, setCreateQuizError] = useState('');
         },
       ]);
 
-      // -----------------------------------------------------
-      // REFRESH ADMIN DATA
-      // -----------------------------------------------------
+
+      // =====================================================
+      // REFRESH DATA
+      // =====================================================
 
       await refreshData();
 
@@ -251,51 +427,64 @@ const [createQuizError, setCreateQuizError] = useState('');
       setCreateQuizLoading(false);
 
     }
+
   };
 
 
-  /* =========================================================
-     ADD QUESTION
-     ========================================================= */
+  // =========================================================
+  // ADD QUESTION
+  // =========================================================
 
   const addQuestion = () => {
 
-    setNewQuestions([
-      ...newQuestions,
-
-      {
-        question: '',
-        options: ['', '', '', ''],
-        correct_answer: 0,
-      },
-    ]);
-
-  };
-
-
-  /* =========================================================
-     REMOVE QUESTION
-     ========================================================= */
-
-  const removeQuestion = (index) => {
-
-    if (newQuestions.length === 1) {
-      return;
-    }
-
     setNewQuestions(
-      newQuestions.filter(
-        (_, questionIndex) =>
-          questionIndex !== index
-      )
+      (previous) => [
+
+        ...previous,
+
+        {
+          question: '',
+          options: ['', '', '', ''],
+          correct_answer: 0,
+        },
+
+      ]
     );
 
   };
 
 
-  /* =========================================================
-     UPDATE QUESTION
-     ========================================================= */
+  // =========================================================
+  // REMOVE QUESTION
+  // =========================================================
+
+  const removeQuestion = (
+    questionIndex
+  ) => {
+
+    if (
+      newQuestions.length === 1
+    ) {
+
+      return;
+
+    }
+
+
+    setNewQuestions(
+      (previous) =>
+        previous.filter(
+          (_, index) =>
+            index !== questionIndex
+        )
+    );
+
+  };
+
+
+  // =========================================================
+  // UPDATE QUESTION
+  // =========================================================
 
   const updateQuestion = (
     questionIndex,
@@ -303,23 +492,26 @@ const [createQuizError, setCreateQuizError] = useState('');
   ) => {
 
     setNewQuestions(
-      newQuestions.map(
-        (item, index) =>
-          index === questionIndex
-            ? {
-                ...item,
-                question: value,
-              }
-            : item
-      )
+      (previous) =>
+        previous.map(
+          (item, index) =>
+
+            index === questionIndex
+              ? {
+                  ...item,
+                  question: value,
+                }
+              : item
+
+        )
     );
 
   };
 
 
-  /* =========================================================
-     UPDATE OPTION
-     ========================================================= */
+  // =========================================================
+  // UPDATE OPTION
+  // =========================================================
 
   const updateOption = (
     questionIndex,
@@ -328,35 +520,47 @@ const [createQuizError, setCreateQuizError] = useState('');
   ) => {
 
     setNewQuestions(
-      newQuestions.map(
-        (item, index) => {
+      (previous) =>
 
-          if (index !== questionIndex) {
-            return item;
+        previous.map(
+          (item, index) => {
+
+            if (
+              index !== questionIndex
+            ) {
+
+              return item;
+
+            }
+
+
+            const updatedOptions = [
+              ...item.options,
+            ];
+
+
+            updatedOptions[
+              optionIndex
+            ] = value;
+
+
+            return {
+              ...item,
+              options:
+                updatedOptions,
+            };
+
           }
+        )
 
-          const updatedOptions = [
-            ...item.options,
-          ];
-
-          updatedOptions[optionIndex] =
-            value;
-
-          return {
-            ...item,
-            options: updatedOptions,
-          };
-
-        }
-      )
     );
 
   };
 
 
-  /* =========================================================
-     UPDATE CORRECT ANSWER
-     ========================================================= */
+  // =========================================================
+  // UPDATE CORRECT ANSWER
+  // =========================================================
 
   const updateCorrectAnswer = (
     questionIndex,
@@ -364,222 +568,329 @@ const [createQuizError, setCreateQuizError] = useState('');
   ) => {
 
     setNewQuestions(
-      newQuestions.map(
-        (item, index) =>
-          index === questionIndex
-            ? {
-                ...item,
-                correct_answer:
-                  Number(value),
-              }
-            : item
-      )
+      (previous) =>
+
+        previous.map(
+          (item, index) =>
+
+            index === questionIndex
+              ? {
+                  ...item,
+                  correct_answer:
+                    Number(value),
+                }
+              : item
+
+        )
     );
 
   };
 
-  /* =========================================================
-     STUDENT NAME
-     ========================================================= */
 
-  const getStudentName = (attempt) => {
+  // =========================================================
+  // GET STUDENT NAME
+  // =========================================================
+
+  const getStudentName = (
+    attempt
+  ) => {
+
     return (
+
       attempt.student_name ||
+
       attempt.studentName ||
+
       attempt.name ||
+
       (
         attempt.student_id
           ? `Student ${attempt.student_id}`
           : 'Unknown Student'
       )
+
     );
+
   };
 
 
-  /* =========================================================
-     QUIZ NAME
-     ========================================================= */
+  // =========================================================
+  // GET QUIZ NAME
+  // =========================================================
 
-  const getQuizName = (attempt) => {
+  const getQuizName = (
+    attempt
+  ) => {
+
     return (
+
       attempt.quiz_title ||
+
       attempt.topic ||
+
       (
         attempt.quiz_id
           ? `Quiz ${attempt.quiz_id}`
           : 'Unknown Quiz'
       )
+
     );
+
   };
 
 
-  /* =========================================================
-     CALCULATE UNIQUE STUDENTS
-     ========================================================= */
+  // =========================================================
+  // UNIQUE STUDENTS
+  // =========================================================
 
-  const uniqueStudentIds = new Set();
+  const uniqueStudentIds =
+    new Set();
 
-  results.forEach((attempt) => {
-    if (attempt.student_id !== null &&
-        attempt.student_id !== undefined) {
 
-      uniqueStudentIds.add(
-        String(attempt.student_id)
-      );
+  results.forEach(
+    (attempt) => {
 
-    } else if (attempt.student_name) {
+      if (
+        attempt.student_id !==
+          null &&
+        attempt.student_id !==
+          undefined
+      ) {
 
-      uniqueStudentIds.add(
+        uniqueStudentIds.add(
+          String(
+            attempt.student_id
+          )
+        );
+
+      } else if (
         attempt.student_name
-      );
+      ) {
+
+        uniqueStudentIds.add(
+          attempt.student_name
+        );
+
+      }
 
     }
-  });
+  );
+
 
   const uniqueStudents =
     uniqueStudentIds.size;
 
 
-  /* =========================================================
-     TOTAL ATTEMPTS
-     ========================================================= */
+  // =========================================================
+  // TOTAL ATTEMPTS
+  // =========================================================
 
   const totalAttempts =
     results.length;
 
 
-  /* =========================================================
-     STUDENT RANKING
-     =========================================================
-     
-     Instead of ranking every individual attempt,
-     we combine attempts belonging to the same student.
-
-     Ranking is based on average percentage.
-     ========================================================= */
+  // =========================================================
+  // STUDENT RANKING
+  // =========================================================
 
   const studentMap = {};
 
-  results.forEach((attempt) => {
 
-    const studentKey =
-      attempt.student_id !== null &&
-      attempt.student_id !== undefined
-        ? String(attempt.student_id)
-        : (
-            attempt.student_name ||
-            'unknown'
+  results.forEach(
+    (attempt) => {
+
+      const studentKey =
+
+        attempt.student_id !==
+          null &&
+        attempt.student_id !==
+          undefined
+
+          ? String(
+              attempt.student_id
+            )
+
+          : (
+              attempt.student_name ||
+              'unknown'
+            );
+
+
+      if (
+        !studentMap[studentKey]
+      ) {
+
+        studentMap[studentKey] = {
+
+          student_id:
+            attempt.student_id,
+
+          student_name:
+            getStudentName(
+              attempt
+            ),
+
+          attempts: 0,
+
+          totalPercentage: 0,
+
+          totalCorrect: 0,
+
+          totalQuestions: 0,
+
+          bestScore: 0,
+
+          latestQuiz:
+            getQuizName(
+              attempt
+            ),
+
+        };
+
+      }
+
+
+      studentMap[
+        studentKey
+      ].attempts += 1;
+
+
+      studentMap[
+        studentKey
+      ].totalPercentage +=
+        Number(
+          attempt.percentage || 0
+        );
+
+
+      studentMap[
+        studentKey
+      ].totalCorrect +=
+        Number(
+          attempt.score || 0
+        );
+
+
+      studentMap[
+        studentKey
+      ].totalQuestions +=
+        Number(
+          attempt.total_questions || 0
+        );
+
+
+      if (
+        Number(
+          attempt.percentage || 0
+        ) >
+        studentMap[
+          studentKey
+        ].bestScore
+      ) {
+
+        studentMap[
+          studentKey
+        ].bestScore =
+          Number(
+            attempt.percentage || 0
           );
 
-    if (!studentMap[studentKey]) {
+      }
 
-      studentMap[studentKey] = {
-        student_id:
-          attempt.student_id,
 
-        student_name:
-          getStudentName(attempt),
-
-        attempts: 0,
-
-        totalPercentage: 0,
-
-        totalCorrect: 0,
-
-        totalQuestions: 0,
-
-        bestScore: 0,
-
-        latestQuiz: getQuizName(attempt),
-      };
+      studentMap[
+        studentKey
+      ].latestQuiz =
+        getQuizName(
+          attempt
+        );
 
     }
+  );
 
 
-    studentMap[studentKey].attempts += 1;
-
-    studentMap[studentKey].totalPercentage +=
-      Number(attempt.percentage || 0);
-
-    studentMap[studentKey].totalCorrect +=
-      Number(attempt.score || 0);
-
-    studentMap[studentKey].totalQuestions +=
-      Number(attempt.total_questions || 0);
-
-
-    if (
-      Number(attempt.percentage || 0) >
-      studentMap[studentKey].bestScore
-    ) {
-      studentMap[studentKey].bestScore =
-        Number(attempt.percentage || 0);
-    }
-
-
-    studentMap[studentKey].latestQuiz =
-      getQuizName(attempt);
-
-  });
-
-
-  const ranking = Object.values(studentMap)
-    .map((student) => ({
-
-      ...student,
-
-      averagePercentage:
-        student.attempts > 0
-          ? Math.round(
-              student.totalPercentage /
-              student.attempts
-            )
-          : 0,
-
-    }))
-    .sort(
-      (a, b) =>
-        b.averagePercentage -
-        a.averagePercentage
+  const ranking =
+    Object.values(
+      studentMap
     )
-    .map((student, index) => ({
 
-      ...student,
+      .map(
+        (student) => ({
 
-      rank: index + 1,
+          ...student,
 
-    }));
+          averagePercentage:
+            student.attempts > 0
+              ? Math.round(
+                  student.totalPercentage /
+                  student.attempts
+                )
+              : 0,
+
+        })
+      )
+
+      .sort(
+        (a, b) =>
+          b.averagePercentage -
+          a.averagePercentage
+      )
+
+      .map(
+        (student, index) => ({
+
+          ...student,
+
+          rank:
+            index + 1,
+
+        })
+      );
 
 
-  /* =========================================================
-     SCORE CLASS
-     ========================================================= */
+  // =========================================================
+  // SCORE CLASS
+  // =========================================================
 
-  const getScoreClass = (percentage) => {
+  const getScoreClass = (
+    percentage
+  ) => {
 
     const score =
-      Number(percentage || 0);
+      Number(
+        percentage || 0
+      );
+
 
     if (score >= 80) {
+
       return 'score-good';
+
     }
+
 
     if (score >= 60) {
+
       return 'score-average';
+
     }
 
+
     return 'score-low';
+
   };
 
 
-  /* =========================================================
-     DASHBOARD
-     ========================================================= */
+  // =========================================================
+  // DASHBOARD
+  // =========================================================
 
   const renderDashboard = () => {
 
     return (
+
       <div className="admin-content">
+
 
         {/* =================================================
             STATISTICS
@@ -587,19 +898,26 @@ const [createQuizError, setCreateQuizError] = useState('');
 
         <div className="admin-stat-grid">
 
+
           <AdminStat
             icon="👨‍🎓"
             title="Students"
-            value={uniqueStudents}
+            value={
+              uniqueStudents
+            }
             description="Students who attempted quizzes"
           />
+
 
           <AdminStat
             icon="📝"
             title="Quiz Attempts"
-            value={totalAttempts}
+            value={
+              totalAttempts
+            }
             description="Total submitted attempts"
           />
+
 
           <AdminStat
             icon="🎯"
@@ -612,6 +930,7 @@ const [createQuizError, setCreateQuizError] = useState('');
             description="Overall student performance"
           />
 
+
           <AdminStat
             icon="🏆"
             title="Best Score"
@@ -623,6 +942,7 @@ const [createQuizError, setCreateQuizError] = useState('');
             description="Highest recorded score"
           />
 
+
         </div>
 
 
@@ -632,7 +952,9 @@ const [createQuizError, setCreateQuizError] = useState('');
 
         <div className="admin-section-card">
 
+
           <div className="admin-section-header">
+
 
             <div>
 
@@ -658,15 +980,19 @@ const [createQuizError, setCreateQuizError] = useState('');
 
             <button
               className="admin-refresh-button"
-              onClick={refreshData}
+              onClick={
+                refreshData
+              }
             >
               🔄 Refresh
             </button>
+
 
           </div>
 
 
           <div className="performance-overview">
+
 
             <div className="overview-item">
 
@@ -701,11 +1027,14 @@ const [createQuizError, setCreateQuizError] = useState('');
               </span>
 
               <strong>
-                {performance?.totalAttempts ||
-                  totalAttempts}
+                {
+                  performance?.totalAttempts ||
+                  totalAttempts
+                }
               </strong>
 
             </div>
+
 
           </div>
 
@@ -718,7 +1047,9 @@ const [createQuizError, setCreateQuizError] = useState('');
 
         <div className="admin-section-card">
 
+
           <div className="admin-section-header">
+
 
             <div>
 
@@ -741,14 +1072,18 @@ const [createQuizError, setCreateQuizError] = useState('');
 
             </div>
 
+
             <button
               className="admin-refresh-button"
               onClick={() =>
-                setActiveSection('ranking')
+                setActiveSection(
+                  'ranking'
+                )
               }
             >
               View Rankings →
             </button>
+
 
           </div>
 
@@ -765,72 +1100,82 @@ const [createQuizError, setCreateQuizError] = useState('');
 
               {ranking
                 .slice(0, 3)
-                .map((student) => (
-
-                  <div
-                    className={`ranking-card ${
-                      student.rank <= 3
-                        ? 'ranking-card--top'
-                        : ''
-                    }`}
-                    key={
-                      student.student_id ||
-                      student.student_name
-                    }
-                  >
+                .map(
+                  (student) => (
 
                     <div
-                      className={`ranking-number ${
-                        student.rank === 1
-                          ? 'gold'
-                          : student.rank === 2
-                          ? 'silver'
-                          : student.rank === 3
-                          ? 'bronze'
+                      className={`ranking-card ${
+                        student.rank <= 3
+                          ? 'ranking-card--top'
                           : ''
                       }`}
+                      key={
+                        student.student_id ||
+                        student.student_name
+                      }
                     >
 
-                      {student.rank <= 3
-                        ? ['🥇', '🥈', '🥉'][
-                            student.rank - 1
-                          ]
-                        : `#${student.rank}`}
+
+                      <div
+                        className={`ranking-number ${
+                          student.rank === 1
+                            ? 'gold'
+                            : student.rank === 2
+                            ? 'silver'
+                            : student.rank === 3
+                            ? 'bronze'
+                            : ''
+                        }`}
+                      >
+
+                        {student.rank <= 3
+
+                          ? [
+                              '🥇',
+                              '🥈',
+                              '🥉',
+                            ][
+                              student.rank - 1
+                            ]
+
+                          : `#${student.rank}`}
+
+                      </div>
+
+
+                      <div className="ranking-student">
+
+                        <strong>
+                          {student.student_name}
+                        </strong>
+
+                        <span>
+                          {student.attempts}{' '}
+                          {student.attempts === 1
+                            ? 'attempt'
+                            : 'attempts'}
+                        </span>
+
+                      </div>
+
+
+                      <div className="ranking-score">
+
+                        <strong>
+                          {student.averagePercentage}%
+                        </strong>
+
+                        <span>
+                          Average Score
+                        </span>
+
+                      </div>
+
 
                     </div>
 
-
-                    <div className="ranking-student">
-
-                      <strong>
-                        {student.student_name}
-                      </strong>
-
-                      <span>
-                        {student.attempts}{' '}
-                        {student.attempts === 1
-                          ? 'attempt'
-                          : 'attempts'}
-                      </span>
-
-                    </div>
-
-
-                    <div className="ranking-score">
-
-                      <strong>
-                        {student.averagePercentage}%
-                      </strong>
-
-                      <span>
-                        Average Score
-                      </span>
-
-                    </div>
-
-                  </div>
-
-                ))}
+                  )
+                )}
 
             </div>
 
@@ -845,7 +1190,9 @@ const [createQuizError, setCreateQuizError] = useState('');
 
         <div className="admin-section-card">
 
+
           <div className="admin-section-header">
+
 
             <div>
 
@@ -867,6 +1214,7 @@ const [createQuizError, setCreateQuizError] = useState('');
 
             </div>
 
+
           </div>
 
 
@@ -885,11 +1233,27 @@ const [createQuizError, setCreateQuizError] = useState('');
                 <thead>
 
                   <tr>
-                    <th>Student</th>
-                    <th>Quiz</th>
-                    <th>Score</th>
-                    <th>Percentage</th>
-                    <th>Date</th>
+
+                    <th>
+                      Student
+                    </th>
+
+                    <th>
+                      Quiz
+                    </th>
+
+                    <th>
+                      Score
+                    </th>
+
+                    <th>
+                      Percentage
+                    </th>
+
+                    <th>
+                      Date
+                    </th>
+
                   </tr>
 
                 </thead>
@@ -899,54 +1263,70 @@ const [createQuizError, setCreateQuizError] = useState('');
 
                   {results
                     .slice(0, 5)
-                    .map((attempt) => (
+                    .map(
+                      (attempt) => (
 
-                      <tr key={attempt.id}>
+                        <tr
+                          key={
+                            attempt.id
+                          }
+                        >
 
-                        <td>
+                          <td>
 
-                          <strong>
-                            {getStudentName(attempt)}
-                          </strong>
+                            <strong>
+                              {getStudentName(
+                                attempt
+                              )}
+                            </strong>
 
-                        </td>
-
-
-                        <td>
-                          {getQuizName(attempt)}
-                        </td>
-
-
-                        <td>
-                          {attempt.score}/
-                          {attempt.total_questions}
-                        </td>
+                          </td>
 
 
-                        <td>
-
-                          <span
-                            className={getScoreClass(
-                              attempt.percentage
+                          <td>
+                            {getQuizName(
+                              attempt
                             )}
-                          >
-                            {attempt.percentage}%
-                          </span>
-
-                        </td>
+                          </td>
 
 
-                        <td>
-                          {attempt.attempted_at
-                            ? new Date(
-                                attempt.attempted_at
-                              ).toLocaleDateString()
-                            : '—'}
-                        </td>
+                          <td>
+                            {attempt.score}/
+                            {attempt.total_questions}
+                          </td>
 
-                      </tr>
 
-                    ))}
+                          <td>
+
+                            <span
+                              className={
+                                getScoreClass(
+                                  attempt.percentage
+                                )
+                              }
+                            >
+                              {attempt.percentage}%
+                            </span>
+
+                          </td>
+
+
+                          <td>
+
+                            {attempt.attempted_at
+
+                              ? new Date(
+                                  attempt.attempted_at
+                                ).toLocaleDateString()
+
+                              : '—'}
+
+                          </td>
+
+                        </tr>
+
+                      )
+                    )}
 
                 </tbody>
 
@@ -958,23 +1338,30 @@ const [createQuizError, setCreateQuizError] = useState('');
 
         </div>
 
+
       </div>
+
     );
+
   };
 
 
-  /* =========================================================
-     RESULTS
-     ========================================================= */
+  // =========================================================
+  // RESULTS
+  // =========================================================
 
   const renderResults = () => {
 
     return (
+
       <div className="admin-content">
+
 
         <div className="admin-section-card">
 
+
           <div className="admin-section-header">
+
 
             <div>
 
@@ -999,10 +1386,13 @@ const [createQuizError, setCreateQuizError] = useState('');
 
             <button
               className="admin-refresh-button"
-              onClick={refreshData}
+              onClick={
+                refreshData
+              }
             >
               🔄 Refresh
             </button>
+
 
           </div>
 
@@ -1023,21 +1413,37 @@ const [createQuizError, setCreateQuizError] = useState('');
 
                   <tr>
 
-                    <th>#</th>
+                    <th>
+                      #
+                    </th>
 
-                    <th>Student</th>
+                    <th>
+                      Student
+                    </th>
 
-                    <th>Quiz</th>
+                    <th>
+                      Quiz
+                    </th>
 
-                    <th>Correct</th>
+                    <th>
+                      Correct
+                    </th>
 
-                    <th>Questions</th>
+                    <th>
+                      Questions
+                    </th>
 
-                    <th>Score</th>
+                    <th>
+                      Score
+                    </th>
 
-                    <th>Percentage</th>
+                    <th>
+                      Percentage
+                    </th>
 
-                    <th>Date</th>
+                    <th>
+                      Date
+                    </th>
 
                   </tr>
 
@@ -1047,9 +1453,17 @@ const [createQuizError, setCreateQuizError] = useState('');
                 <tbody>
 
                   {results.map(
-                    (attempt, index) => (
+                    (
+                      attempt,
+                      index
+                    ) => (
 
-                      <tr key={attempt.id}>
+                      <tr
+                        key={
+                          attempt.id ||
+                          `${attempt.student_id}-${attempt.quiz_id}-${index}`
+                        }
+                      >
 
                         <td>
                           {index + 1}
@@ -1093,9 +1507,11 @@ const [createQuizError, setCreateQuizError] = useState('');
                         <td>
 
                           <span
-                            className={getScoreClass(
-                              attempt.percentage
-                            )}
+                            className={
+                              getScoreClass(
+                                attempt.percentage
+                              )
+                            }
                           >
                             {attempt.percentage}%
                           </span>
@@ -1106,12 +1522,15 @@ const [createQuizError, setCreateQuizError] = useState('');
                         <td>
 
                           {attempt.attempted_at
+
                             ? new Date(
                                 attempt.attempted_at
                               ).toLocaleString()
+
                             : '—'}
 
                         </td>
+
 
                       </tr>
 
@@ -1128,23 +1547,30 @@ const [createQuizError, setCreateQuizError] = useState('');
 
         </div>
 
+
       </div>
+
     );
+
   };
 
 
-  /* =========================================================
-     RANKING
-     ========================================================= */
+  // =========================================================
+  // RANKING
+  // =========================================================
 
   const renderRanking = () => {
 
     return (
+
       <div className="admin-content">
+
 
         <div className="admin-section-card">
 
+
           <div className="admin-section-header">
+
 
             <div>
 
@@ -1170,10 +1596,13 @@ const [createQuizError, setCreateQuizError] = useState('');
 
             <button
               className="admin-refresh-button"
-              onClick={refreshData}
+              onClick={
+                refreshData
+              }
             >
               🔄 Refresh
             </button>
+
 
           </div>
 
@@ -1188,75 +1617,85 @@ const [createQuizError, setCreateQuizError] = useState('');
 
             <div className="ranking-list">
 
-              {ranking.map((student) => (
-
-                <div
-                  className={`ranking-card ${
-                    student.rank <= 3
-                      ? 'ranking-card--top'
-                      : ''
-                  }`}
-                  key={
-                    student.student_id ||
-                    student.student_name
-                  }
-                >
+              {ranking.map(
+                (student) => (
 
                   <div
-                    className={`ranking-number ${
-                      student.rank === 1
-                        ? 'gold'
-                        : student.rank === 2
-                        ? 'silver'
-                        : student.rank === 3
-                        ? 'bronze'
+                    className={`ranking-card ${
+                      student.rank <= 3
+                        ? 'ranking-card--top'
                         : ''
                     }`}
+                    key={
+                      student.student_id ||
+                      student.student_name
+                    }
                   >
 
-                    {student.rank <= 3
-                      ? ['🥇', '🥈', '🥉'][
-                          student.rank - 1
-                        ]
-                      : `#${student.rank}`}
+
+                    <div
+                      className={`ranking-number ${
+                        student.rank === 1
+                          ? 'gold'
+                          : student.rank === 2
+                          ? 'silver'
+                          : student.rank === 3
+                          ? 'bronze'
+                          : ''
+                      }`}
+                    >
+
+                      {student.rank <= 3
+
+                        ? [
+                            '🥇',
+                            '🥈',
+                            '🥉',
+                          ][
+                            student.rank - 1
+                          ]
+
+                        : `#${student.rank}`}
+
+                    </div>
+
+
+                    <div className="ranking-student">
+
+                      <strong>
+                        {student.student_name}
+                      </strong>
+
+                      <span>
+
+                        {student.attempts}{' '}
+
+                        {student.attempts === 1
+                          ? 'quiz attempt'
+                          : 'quiz attempts'}
+
+                      </span>
+
+                    </div>
+
+
+                    <div className="ranking-score">
+
+                      <strong>
+                        {student.averagePercentage}%
+                      </strong>
+
+                      <span>
+                        Average
+                      </span>
+
+                    </div>
+
 
                   </div>
 
-
-                  <div className="ranking-student">
-
-                    <strong>
-                      {student.student_name}
-                    </strong>
-
-                    <span>
-
-                      {student.attempts}{' '}
-
-                      {student.attempts === 1
-                        ? 'quiz attempt'
-                        : 'quiz attempts'}
-
-                    </span>
-
-                  </div>
-
-
-                  <div className="ranking-score">
-
-                    <strong>
-                      {student.averagePercentage}%
-                    </strong>
-
-                    <span>
-                      Average
-                    </span>
-
-                  </div>
-
-                </div>
-
-              ))}
+                )
+              )}
 
             </div>
 
@@ -1264,21 +1703,30 @@ const [createQuizError, setCreateQuizError] = useState('');
 
         </div>
 
+
       </div>
+
     );
+
   };
 
-/* =========================================================
-     CREATE QUIZ PAGE
-     ========================================================= */
+
+  // =========================================================
+  // CREATE QUIZ
+  // =========================================================
 
   const renderCreateQuiz = () => {
+
     return (
+
       <div className="admin-content">
+
 
         <div className="admin-section-card">
 
+
           <div className="admin-section-header">
+
 
             <div>
 
@@ -1301,16 +1749,16 @@ const [createQuizError, setCreateQuizError] = useState('');
 
             </div>
 
+
             <button
               className="admin-refresh-button"
-              onClick={() => {
-                setShowCreateQuiz(false);
-                setCreateQuizMessage('');
-                setCreateQuizError('');
-              }}
+              onClick={
+                closeCreateQuiz
+              }
             >
               ← Back
             </button>
+
 
           </div>
 
@@ -1321,6 +1769,7 @@ const [createQuizError, setCreateQuizError] = useState('');
 
           <div className="create-quiz-form">
 
+
             <div className="create-quiz-field">
 
               <label>
@@ -1330,11 +1779,14 @@ const [createQuizError, setCreateQuizError] = useState('');
               <input
                 type="text"
                 placeholder="Example: Industrial IoT Fundamentals"
-                value={quizTitle}
-                onChange={(event) =>
-                  setQuizTitle(
-                    event.target.value
-                  )
+                value={
+                  quizTitle
+                }
+                onChange={
+                  (event) =>
+                    setQuizTitle(
+                      event.target.value
+                    )
                 }
               />
 
@@ -1349,16 +1801,20 @@ const [createQuizError, setCreateQuizError] = useState('');
 
               <textarea
                 placeholder="Enter a short description for this quiz..."
-                value={quizDescription}
-                onChange={(event) =>
-                  setQuizDescription(
-                    event.target.value
-                  )
+                value={
+                  quizDescription
+                }
+                onChange={
+                  (event) =>
+                    setQuizDescription(
+                      event.target.value
+                    )
                 }
                 rows="4"
               />
 
             </div>
+
 
           </div>
 
@@ -1368,6 +1824,7 @@ const [createQuizError, setCreateQuizError] = useState('');
               ================================================= */}
 
           <div className="create-quiz-questions">
+
 
             <div className="create-quiz-questions-header">
 
@@ -1384,34 +1841,49 @@ const [createQuizError, setCreateQuizError] = useState('');
 
               </div>
 
+
               <span>
-                {newQuestions.length} question
+
+                {newQuestions.length}{' '}
+
+                question
                 {newQuestions.length !== 1
                   ? 's'
                   : ''}
+
               </span>
+
 
             </div>
 
 
             {newQuestions.map(
-              (item, questionIndex) => (
+              (
+                item,
+                questionIndex
+              ) => (
 
                 <div
                   className="create-question-card"
-                  key={questionIndex}
+                  key={
+                    questionIndex
+                  }
                 >
 
+
                   <div className="create-question-header">
+
 
                     <div>
 
                       <span>
-                        QUESTION {questionIndex + 1}
+                        QUESTION{' '}
+                        {questionIndex + 1}
                       </span>
 
                       <h3>
-                        Question {questionIndex + 1}
+                        Question{' '}
+                        {questionIndex + 1}
                       </h3>
 
                     </div>
@@ -1433,6 +1905,7 @@ const [createQuizError, setCreateQuizError] = useState('');
 
                     )}
 
+
                   </div>
 
 
@@ -1447,12 +1920,15 @@ const [createQuizError, setCreateQuizError] = useState('');
                     <input
                       type="text"
                       placeholder="Enter your question..."
-                      value={item.question}
-                      onChange={(event) =>
-                        updateQuestion(
-                          questionIndex,
-                          event.target.value
-                        )
+                      value={
+                        item.question
+                      }
+                      onChange={
+                        (event) =>
+                          updateQuestion(
+                            questionIndex,
+                            event.target.value
+                          )
                       }
                     />
 
@@ -1464,7 +1940,10 @@ const [createQuizError, setCreateQuizError] = useState('');
                   <div className="options-grid">
 
                     {item.options.map(
-                      (option, optionIndex) => (
+                      (
+                        option,
+                        optionIndex
+                      ) => (
 
                         <div
                           className={
@@ -1473,21 +1952,26 @@ const [createQuizError, setCreateQuizError] = useState('');
                               ? 'create-option correct'
                               : 'create-option'
                           }
-                          key={optionIndex}
+                          key={
+                            optionIndex
+                          }
                         >
+
 
                           <div className="option-label">
 
                             <span>
                               {String.fromCharCode(
-                                65 + optionIndex
+                                65 +
+                                optionIndex
                               )}
                             </span>
 
                             <label>
                               Option{' '}
                               {String.fromCharCode(
-                                65 + optionIndex
+                                65 +
+                                optionIndex
                               )}
                             </label>
 
@@ -1497,17 +1981,22 @@ const [createQuizError, setCreateQuizError] = useState('');
                           <input
                             type="text"
                             placeholder={`Enter option ${String.fromCharCode(
-                              65 + optionIndex
+                              65 +
+                              optionIndex
                             )}`}
-                            value={option}
-                            onChange={(event) =>
-                              updateOption(
-                                questionIndex,
-                                optionIndex,
-                                event.target.value
-                              )
+                            value={
+                              option
+                            }
+                            onChange={
+                              (event) =>
+                                updateOption(
+                                  questionIndex,
+                                  optionIndex,
+                                  event.target.value
+                                )
                             }
                           />
+
 
                         </div>
 
@@ -1525,15 +2014,17 @@ const [createQuizError, setCreateQuizError] = useState('');
                       Correct Answer
                     </label>
 
+
                     <select
                       value={
                         item.correct_answer
                       }
-                      onChange={(event) =>
-                        updateCorrectAnswer(
-                          questionIndex,
-                          event.target.value
-                        )
+                      onChange={
+                        (event) =>
+                          updateCorrectAnswer(
+                            questionIndex,
+                            event.target.value
+                          )
                       }
                     >
 
@@ -1555,16 +2046,20 @@ const [createQuizError, setCreateQuizError] = useState('');
 
                     </select>
 
+
                     <span>
                       ✓ Correct answer
                     </span>
 
+
                   </div>
+
 
                 </div>
 
               )
             )}
+
 
           </div>
 
@@ -1576,7 +2071,9 @@ const [createQuizError, setCreateQuizError] = useState('');
           <button
             type="button"
             className="add-question-button"
-            onClick={addQuestion}
+            onClick={
+              addQuestion
+            }
           >
             ➕ Add Another Question
           </button>
@@ -1605,19 +2102,21 @@ const [createQuizError, setCreateQuizError] = useState('');
 
 
           {/* =================================================
-              CREATE BUTTON
+              ACTIONS
               ================================================= */}
 
           <div className="create-quiz-actions">
 
+
             <button
               type="button"
               className="create-quiz-cancel"
-              onClick={() => {
-                setShowCreateQuiz(false);
-                setCreateQuizMessage('');
-                setCreateQuizError('');
-              }}
+              onClick={
+                closeCreateQuiz
+              }
+              disabled={
+                createQuizLoading
+              }
             >
               Cancel
             </button>
@@ -1626,30 +2125,44 @@ const [createQuizError, setCreateQuizError] = useState('');
             <button
               type="button"
               className="create-quiz-submit"
-              onClick={createQuiz}
-              disabled={createQuizLoading}
+              onClick={
+                createQuiz
+              }
+              disabled={
+                createQuizLoading
+              }
             >
 
               {createQuizLoading
+
                 ? '⏳ Creating Quiz...'
+
                 : '⚡ Create Quiz'}
 
             </button>
 
+
           </div>
+
 
         </div>
 
+
       </div>
+
     );
+
   };
 
-  /* =========================================================
-     MAIN PAGE
-     ========================================================= */
+
+  // =========================================================
+  // MAIN PAGE
+  // =========================================================
 
   return (
+
     <div className="admin-page">
+
 
       {/* =====================================================
           HEADER
@@ -1658,6 +2171,7 @@ const [createQuizError, setCreateQuizError] = useState('');
       <header className="admin-header">
 
         <div className="admin-header-inner">
+
 
           <div>
 
@@ -1679,10 +2193,13 @@ const [createQuizError, setCreateQuizError] = useState('');
 
           <button
             className="student-home-button"
-            onClick={() => navigate('/')}
+            onClick={() =>
+              navigate('/')
+            }
           >
             ← Student Portal
           </button>
+
 
         </div>
 
@@ -1695,15 +2212,25 @@ const [createQuizError, setCreateQuizError] = useState('');
 
       <nav className="admin-nav">
 
+
         <button
           className={
-            activeSection === 'dashboard'
+            activeSection ===
+            'dashboard'
               ? 'admin-nav-button active'
               : 'admin-nav-button'
           }
-          onClick={() =>
-            setActiveSection('dashboard')
-          }
+          onClick={() => {
+
+            setActiveSection(
+              'dashboard'
+            );
+
+            setShowCreateQuiz(
+              false
+            );
+
+          }}
         >
           📊 Dashboard
         </button>
@@ -1711,13 +2238,22 @@ const [createQuizError, setCreateQuizError] = useState('');
 
         <button
           className={
-            activeSection === 'results'
+            activeSection ===
+            'results'
               ? 'admin-nav-button active'
               : 'admin-nav-button'
           }
-          onClick={() =>
-            setActiveSection('results')
-          }
+          onClick={() => {
+
+            setActiveSection(
+              'results'
+            );
+
+            setShowCreateQuiz(
+              false
+            );
+
+          }}
         >
           👨‍🎓 Student Results
         </button>
@@ -1725,33 +2261,40 @@ const [createQuizError, setCreateQuizError] = useState('');
 
         <button
           className={
-            activeSection === 'ranking'
+            activeSection ===
+            'ranking'
               ? 'admin-nav-button active'
               : 'admin-nav-button'
           }
-          onClick={() =>
-            setActiveSection('ranking')
-          }
+          onClick={() => {
+
+            setActiveSection(
+              'ranking'
+            );
+
+            setShowCreateQuiz(
+              false
+            );
+
+          }}
         >
           🏆 Rankings
         </button>
 
 
         <button
-  className={
-    showCreateQuiz
-      ? 'admin-nav-button active'
-      : 'admin-nav-button'
-  }
-  onClick={() => {
-    setShowCreateQuiz(true);
-    setActiveSection('create');
-    setCreateQuizMessage('');
-    setCreateQuizError('');
-  }}
->
-  ➕ Create Quiz
-</button>
+          className={
+            showCreateQuiz
+              ? 'admin-nav-button active'
+              : 'admin-nav-button'
+          }
+          onClick={
+            openCreateQuiz
+          }
+        >
+          ➕ Create Quiz
+        </button>
+
 
       </nav>
 
@@ -1762,21 +2305,26 @@ const [createQuizError, setCreateQuizError] = useState('');
 
       <main className="admin-main">
 
+
         {loading ? (
 
           <div className="admin-loading">
+
 
             <div className="admin-loading-icon">
               ⚡
             </div>
 
+
             <h2>
               Loading Admin Dashboard...
             </h2>
 
+
             <p>
               Fetching Quizforge performance data.
             </p>
+
 
           </div>
 
@@ -1784,21 +2332,29 @@ const [createQuizError, setCreateQuizError] = useState('');
 
           <>
 
-            {activeSection === 'dashboard' &&
-  renderDashboard()}
+            {activeSection ===
+              'dashboard' &&
+              renderDashboard()}
 
-{activeSection === 'results' &&
-  renderResults()}
 
-{activeSection === 'ranking' &&
-  renderRanking()}
+            {activeSection ===
+              'results' &&
+              renderResults()}
 
-{activeSection === 'create' &&
-  renderCreateQuiz()}
+
+            {activeSection ===
+              'ranking' &&
+              renderRanking()}
+
+
+            {activeSection ===
+              'create' &&
+              renderCreateQuiz()}
 
           </>
 
         )}
+
 
       </main>
 
@@ -1809,24 +2365,30 @@ const [createQuizError, setCreateQuizError] = useState('');
 
       <footer className="admin-footer">
 
+
         <span>
           ⚡ Quizforge
         </span>
+
 
         <p>
           Industrial IoT Quiz Management Platform
         </p>
 
+
       </footer>
 
+
     </div>
+
   );
+
 }
 
 
-/* =========================================================
-   STAT CARD
-   ========================================================= */
+// =========================================================
+// ADMIN STAT CARD
+// =========================================================
 
 function AdminStat({
   icon,
@@ -1836,26 +2398,34 @@ function AdminStat({
 }) {
 
   return (
+
     <div className="admin-stat-card">
+
 
       <div className="admin-stat-icon">
         {icon}
       </div>
 
+
       <span className="admin-stat-title">
         {title}
       </span>
+
 
       <strong className="admin-stat-value">
         {value}
       </strong>
 
+
       <small className="admin-stat-description">
         {description}
       </small>
 
+
     </div>
+
   );
+
 }
 
 
