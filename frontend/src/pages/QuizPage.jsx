@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+
 import './QuizPage.css';
 
 const topicInfo = {
@@ -94,6 +95,7 @@ const topicInfo = {
   },
 };
 
+
 /* =========================================================
    QUESTION-SPECIFIC VISUALS
    ========================================================= */
@@ -176,6 +178,7 @@ const visualSets = {
     { icon: '🌐', title: 'Network', text: 'Allows access' },
   ],
 };
+
 
 /* =========================================================
    FIND VISUAL FOR QUESTION
@@ -271,6 +274,11 @@ function getQuestionVisual(questionText, topic) {
   return topic.flow;
 }
 
+
+/* =========================================================
+   QUIZ PAGE
+   ========================================================= */
+
 function QuizPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -285,6 +293,7 @@ function QuizPage() {
 
   const topic = topicInfo[quizId] || topicInfo[1];
 
+
   /* =====================================================
      LOAD QUIZ
      ===================================================== */
@@ -296,7 +305,9 @@ function QuizPage() {
     setResult(null);
     setCurrentQuestion(0);
 
-    fetch(`http://localhost:5001/api/quiz?quizId=${quizId}`)
+    fetch(
+      `http://localhost:5001/api/quiz?quizId=${quizId}`
+    )
       .then((response) => {
         if (!response.ok) {
           throw new Error('Failed to load quiz');
@@ -309,10 +320,15 @@ function QuizPage() {
         setLoading(false);
       })
       .catch((error) => {
-        console.error('Quiz loading error:', error);
+        console.error(
+          'Quiz loading error:',
+          error
+        );
+
         setLoading(false);
       });
   }, [quizId]);
+
 
   /* =====================================================
      SELECT ANSWER
@@ -325,24 +341,59 @@ function QuizPage() {
     }));
   };
 
+
+  /* =====================================================
+     COUNT UNANSWERED QUESTIONS
+     ===================================================== */
+
+  const getUnansweredCount = () => {
+    return questions.filter(
+      (question) => !answers[question.id]
+    ).length;
+  };
+
+
   /* =====================================================
      SUBMIT QUIZ
      ===================================================== */
 
   const submitQuiz = async () => {
+    const unansweredCount =
+      getUnansweredCount();
+
+    /* ---------------------------------------------------
+       WARN USER IF QUESTIONS ARE UNANSWERED
+       --------------------------------------------------- */
+
+    if (unansweredCount > 0) {
+      const shouldSubmit = window.confirm(
+        `You have ${unansweredCount} unanswered question${
+          unansweredCount > 1 ? 's' : ''
+        }.\n\nDo you still want to submit the quiz?`
+      );
+
+      if (!shouldSubmit) {
+        return;
+      }
+    }
+
     try {
-      const formattedAnswers = questions.map((question) => ({
-        questionId: question.id,
-        selectedAnswer: answers[question.id] || '',
-      }));
+      const formattedAnswers =
+        questions.map((question) => ({
+          questionId: question.id,
+          selectedAnswer:
+            answers[question.id] || '',
+        }));
 
       const response = await fetch(
         `http://localhost:5001/api/quiz/submit?quizId=${quizId}`,
         {
           method: 'POST',
+
           headers: {
             'Content-Type': 'application/json',
           },
+
           body: JSON.stringify({
             answers: formattedAnswers,
           }),
@@ -350,10 +401,13 @@ function QuizPage() {
       );
 
       if (!response.ok) {
-        throw new Error('Failed to submit quiz');
+        throw new Error(
+          'Failed to submit quiz'
+        );
       }
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
       setResult(data);
 
@@ -361,10 +415,19 @@ function QuizPage() {
         top: 0,
         behavior: 'smooth',
       });
+
     } catch (error) {
-      console.error('Quiz submission error:', error);
+      console.error(
+        'Quiz submission error:',
+        error
+      );
+
+      alert(
+        'Unable to submit the quiz. Please make sure the backend server is running.'
+      );
     }
   };
+
 
   /* =====================================================
      RETAKE
@@ -381,6 +444,7 @@ function QuizPage() {
     });
   };
 
+
   /* =====================================================
      LOADING
      ===================================================== */
@@ -388,18 +452,27 @@ function QuizPage() {
   if (loading) {
     return (
       <section className="quiz-page">
-        <div className="quiz-container loading-container">
-          <div className="loading-icon">⚡</div>
 
-          <h2>Loading Quiz...</h2>
+        <div className="quiz-container loading-container">
+
+          <div className="loading-icon">
+            ⚡
+          </div>
+
+          <h2>
+            Loading Quiz...
+          </h2>
 
           <p>
             Preparing your Industrial IoT assessment.
           </p>
+
         </div>
+
       </section>
     );
   }
+
 
   /* =====================================================
      EMPTY
@@ -408,10 +481,16 @@ function QuizPage() {
   if (questions.length === 0) {
     return (
       <section className="quiz-page">
-        <div className="quiz-container empty-container">
-          <div className="loading-icon">⚠️</div>
 
-          <h2>No Questions Found</h2>
+        <div className="quiz-container empty-container">
+
+          <div className="loading-icon">
+            ⚠️
+          </div>
+
+          <h2>
+            No Questions Found
+          </h2>
 
           <p>
             This quiz does not contain any questions yet.
@@ -423,33 +502,43 @@ function QuizPage() {
           >
             🏠 Back to Home
           </button>
+
         </div>
+
       </section>
     );
   }
+
 
   /* =====================================================
      RESULT SCREEN
      ===================================================== */
 
   if (result) {
-    const correctCount = result.score;
-    const wrongCount = result.total - result.score;
 
-    let performanceTitle = 'Keep Practicing! 📚';
+    const correctCount = result.score;
+    const wrongCount =
+      result.total - result.score;
+
+    let performanceTitle =
+      'Keep Practicing! 📚';
 
     if (result.percentage >= 90) {
-      performanceTitle = 'Outstanding Performance! 🏆';
+      performanceTitle =
+        'Outstanding Performance! 🏆';
     } else if (result.percentage >= 80) {
-      performanceTitle = 'Excellent Work! 🚀';
+      performanceTitle =
+        'Excellent Work! 🚀';
     } else if (result.percentage >= 60) {
-      performanceTitle = 'Good Job! 💪';
+      performanceTitle =
+        'Good Job! 💪';
     }
 
     return (
       <section className="quiz-page">
 
         <div className="quiz-container result-container">
+
 
           {/* =================================================
               RESULT HERO
@@ -458,7 +547,9 @@ function QuizPage() {
           <div className="result-hero">
 
             <div className="result-icon">
-              {result.percentage >= 80 ? '🎉' : '📚'}
+              {result.percentage >= 80
+                ? '🎉'
+                : '📚'}
             </div>
 
             <p className="result-label">
@@ -492,6 +583,7 @@ function QuizPage() {
 
           </div>
 
+
           {/* =================================================
               SCORE SUMMARY
               ================================================= */}
@@ -505,6 +597,7 @@ function QuizPage() {
               </span>
 
               <div>
+
                 <strong>
                   {correctCount}
                 </strong>
@@ -512,9 +605,11 @@ function QuizPage() {
                 <p>
                   Correct
                 </p>
+
               </div>
 
             </div>
+
 
             <div className="summary-card summary-card--wrong">
 
@@ -523,6 +618,7 @@ function QuizPage() {
               </span>
 
               <div>
+
                 <strong>
                   {wrongCount}
                 </strong>
@@ -530,9 +626,11 @@ function QuizPage() {
                 <p>
                   Wrong
                 </p>
+
               </div>
 
             </div>
+
 
             <div className="summary-card summary-card--score">
 
@@ -541,6 +639,7 @@ function QuizPage() {
               </span>
 
               <div>
+
                 <strong>
                   {result.percentage}%
                 </strong>
@@ -548,11 +647,13 @@ function QuizPage() {
                 <p>
                   Score
                 </p>
+
               </div>
 
             </div>
 
           </div>
+
 
           {/* =================================================
               PERFORMANCE ANALYSIS
@@ -580,6 +681,7 @@ function QuizPage() {
 
             </div>
 
+
             <div className="performance-card">
 
               <div className="performance-top">
@@ -596,6 +698,7 @@ function QuizPage() {
 
                 </div>
 
+
                 <div className="performance-main">
 
                   <span>
@@ -610,6 +713,7 @@ function QuizPage() {
 
               </div>
 
+
               <div className="performance-bar">
 
                 <div
@@ -620,6 +724,7 @@ function QuizPage() {
                 />
 
               </div>
+
 
               <div className="performance-stats">
 
@@ -643,6 +748,7 @@ function QuizPage() {
 
                 </div>
 
+
                 <div className="performance-stat performance-stat--wrong">
 
                   <span>
@@ -664,6 +770,7 @@ function QuizPage() {
                 </div>
 
               </div>
+
 
               <div className="performance-message">
 
@@ -693,6 +800,7 @@ function QuizPage() {
 
           </div>
 
+
           {/* =================================================
               QUICK CONCEPT REVIEW
               ================================================= */}
@@ -719,48 +827,54 @@ function QuizPage() {
 
             </div>
 
+
             <div className="iot-flow">
 
-              {topic.flow.map((step, index) => (
+              {topic.flow.map(
+                (step, index) => (
 
-                <div
-                  className="iot-flow-group"
-                  key={step.title}
-                >
+                  <div
+                    className="iot-flow-group"
+                    key={step.title}
+                  >
 
-                  <div className="iot-flow-card">
+                    <div className="iot-flow-card">
 
-                    <span className="iot-flow-number">
-                      {index + 1}
-                    </span>
+                      <span className="iot-flow-number">
+                        {index + 1}
+                      </span>
 
-                    <span className="iot-flow-icon">
-                      {step.icon}
-                    </span>
+                      <span className="iot-flow-icon">
+                        {step.icon}
+                      </span>
 
-                    <strong>
-                      {step.title}
-                    </strong>
+                      <strong>
+                        {step.title}
+                      </strong>
 
-                    <small>
-                      {step.text}
-                    </small>
+                      <small>
+                        {step.text}
+                      </small>
+
+                    </div>
+
+
+                    {index <
+                      topic.flow.length - 1 && (
+                      <div className="iot-arrow">
+                        →
+                      </div>
+                    )}
 
                   </div>
 
-                  {index < topic.flow.length - 1 && (
-                    <div className="iot-arrow">
-                      →
-                    </div>
-                  )}
-
-                </div>
-
-              ))}
+                )
+              )}
 
             </div>
 
           </div>
+
 
           {/* =================================================
               ANSWER REVIEW
@@ -788,208 +902,224 @@ function QuizPage() {
 
             </div>
 
+
             {result.review &&
-              result.review.map((item, index) => {
+              result.review.map(
+                (item, index) => {
 
-                const questionVisual = getQuestionVisual(
-                  item.question || '',
-                  topic
-                );
+                  const questionVisual =
+                    getQuestionVisual(
+                      item.question || '',
+                      topic
+                    );
 
-                return (
-                  <div
-                    className={`review-card ${
-                      item.isCorrect
-                        ? 'review-card--correct'
-                        : 'review-card--wrong'
-                    }`}
-                    key={item.questionId}
-                  >
+                  return (
 
-                    {/* QUESTION HEADER */}
+                    <div
+                      className={`review-card ${
+                        item.isCorrect
+                          ? 'review-card--correct'
+                          : 'review-card--wrong'
+                      }`}
+                      key={item.questionId}
+                    >
 
-                    <div className="review-card__header">
 
-                      <div className="question-number">
-                        Question {index + 1}
-                      </div>
+                      {/* QUESTION HEADER */}
 
-                      <span
-                        className={
-                          item.isCorrect
-                            ? 'answer-status correct'
-                            : 'answer-status wrong'
-                        }
-                      >
-                        {item.isCorrect
-                          ? '✓ Correct'
-                          : '✕ Wrong'}
-                      </span>
+                      <div className="review-card__header">
 
-                    </div>
+                        <div className="question-number">
+                          Question {index + 1}
+                        </div>
 
-                    {/* QUESTION */}
-
-                    <h3 className="review-question">
-                      {item.question}
-                    </h3>
-
-                    {/* ANSWER COMPARISON */}
-
-                    <div className="answer-comparison">
-
-                      <div
-                        className={`answer-box ${
-                          item.isCorrect
-                            ? 'answer-box--correct'
-                            : 'answer-box--wrong'
-                        }`}
-                      >
-
-                        <span className="answer-label">
-                          Your Answer
+                        <span
+                          className={
+                            item.isCorrect
+                              ? 'answer-status correct'
+                              : 'answer-status wrong'
+                          }
+                        >
+                          {item.isCorrect
+                            ? '✓ Correct'
+                            : '✕ Wrong'}
                         </span>
 
-                        <strong>
-                          {item.userAnswer ||
-                            'Not answered'}
-                        </strong>
+                      </div>
+
+
+                      {/* QUESTION */}
+
+                      <h3 className="review-question">
+                        {item.question}
+                      </h3>
+
+
+                      {/* ANSWER COMPARISON */}
+
+                      <div className="answer-comparison">
+
+                        <div
+                          className={`answer-box ${
+                            item.isCorrect
+                              ? 'answer-box--correct'
+                              : 'answer-box--wrong'
+                          }`}
+                        >
+
+                          <span className="answer-label">
+                            Your Answer
+                          </span>
+
+                          <strong>
+                            {item.userAnswer ||
+                              'Not answered'}
+                          </strong>
+
+                        </div>
+
+
+                        <div className="answer-box answer-box--correct">
+
+                          <span className="answer-label">
+                            Correct Answer
+                          </span>
+
+                          <strong>
+                            {item.correctAnswer}
+                          </strong>
+
+                        </div>
 
                       </div>
 
-                      <div className="answer-box answer-box--correct">
 
-                        <span className="answer-label">
-                          Correct Answer
-                        </span>
+                      {/* EXPLANATION */}
 
-                        <strong>
-                          {item.correctAnswer}
-                        </strong>
+                      <div className="review-explanation">
 
-                      </div>
+                        <div className="explanation-title">
 
-                    </div>
+                          <span>
+                            💡
+                          </span>
 
-                    {/* EXPLANATION */}
+                          Explanation
 
-                    <div className="review-explanation">
+                        </div>
 
-                      <div className="explanation-title">
-
-                        <span>
-                          💡
-                        </span>
-
-                        Explanation
+                        <p>
+                          {item.explanation}
+                        </p>
 
                       </div>
 
-                      <p>
-                        {item.explanation}
-                      </p>
 
-                    </div>
+                      {/* QUESTION SPECIFIC VISUAL */}
 
-                    {/* =================================================
-                        QUESTION SPECIFIC VISUAL
-                        ================================================= */}
+                      <div className="learning-section">
 
-                    <div className="learning-section">
+                        <div className="section-heading">
 
-                      <div className="section-heading">
+                          <span>
+                            📊
+                          </span>
 
-                        <span>
-                          📊
+                          <div>
+
+                            <h2>
+                              Visual Concept
+                            </h2>
+
+                            <p>
+                              Understand the concept behind this question.
+                            </p>
+
+                          </div>
+
+                        </div>
+
+
+                        <div className="iot-flow">
+
+                          {questionVisual.map(
+                            (
+                              step,
+                              visualIndex
+                            ) => (
+
+                              <div
+                                className="iot-flow-group"
+                                key={`${item.questionId}-${step.title}`}
+                              >
+
+                                <div className="iot-flow-card">
+
+                                  <span className="iot-flow-number">
+                                    {visualIndex + 1}
+                                  </span>
+
+                                  <span className="iot-flow-icon">
+                                    {step.icon}
+                                  </span>
+
+                                  <strong>
+                                    {step.title}
+                                  </strong>
+
+                                  <small>
+                                    {step.text}
+                                  </small>
+
+                                </div>
+
+
+                                {visualIndex <
+                                  questionVisual.length - 1 && (
+                                  <div className="iot-arrow">
+                                    →
+                                  </div>
+                                )}
+
+                              </div>
+
+                            )
+                          )}
+
+                        </div>
+
+                      </div>
+
+
+                      {/* KEY CONCEPT */}
+
+                      <div className="question-visual">
+
+                        <span className="question-visual__icon">
+                          {topic.icon}
                         </span>
 
                         <div>
 
-                          <h2>
-                            Visual Concept
-                          </h2>
+                          <strong>
+                            Key Concept
+                          </strong>
 
                           <p>
-                            Understand the concept behind this question.
+                            {topic.visual}
                           </p>
 
                         </div>
 
                       </div>
 
-                      <div className="iot-flow">
-
-                        {questionVisual.map(
-                          (step, visualIndex) => (
-
-                            <div
-                              className="iot-flow-group"
-                              key={`${item.questionId}-${step.title}`}
-                            >
-
-                              <div className="iot-flow-card">
-
-                                <span className="iot-flow-number">
-                                  {visualIndex + 1}
-                                </span>
-
-                                <span className="iot-flow-icon">
-                                  {step.icon}
-                                </span>
-
-                                <strong>
-                                  {step.title}
-                                </strong>
-
-                                <small>
-                                  {step.text}
-                                </small>
-
-                              </div>
-
-                              {visualIndex <
-                                questionVisual.length - 1 && (
-                                <div className="iot-arrow">
-                                  →
-                                </div>
-                              )}
-
-                            </div>
-
-                          )
-                        )}
-
-                      </div>
-
                     </div>
-
-                    {/* KEY CONCEPT */}
-
-                    <div className="question-visual">
-
-                      <span className="question-visual__icon">
-                        {topic.icon}
-                      </span>
-
-                      <div>
-
-                        <strong>
-                          Key Concept
-                        </strong>
-
-                        <p>
-                          {topic.visual}
-                        </p>
-
-                      </div>
-
-                    </div>
-
-                  </div>
-                );
-              })}
+                  );
+                }
+              )}
 
           </div>
+
 
           {/* =================================================
               RESULT ACTIONS
@@ -1019,11 +1149,14 @@ function QuizPage() {
     );
   }
 
+
   /* =====================================================
      CURRENT QUESTION
      ===================================================== */
 
-  const question = questions[currentQuestion];
+  const question =
+    questions[currentQuestion];
+
 
   /* =====================================================
      QUIZ SCREEN
@@ -1034,7 +1167,10 @@ function QuizPage() {
 
       <div className="quiz-container">
 
-        {/* QUIZ HEADER */}
+
+        {/* =================================================
+            QUIZ HEADER
+            ================================================= */}
 
         <div className="quiz-header">
 
@@ -1051,6 +1187,7 @@ function QuizPage() {
           </p>
 
         </div>
+
 
         {/* =================================================
             PROGRESS
@@ -1076,6 +1213,7 @@ function QuizPage() {
 
           </div>
 
+
           <div className="quiz-progress-bar">
 
             <div
@@ -1093,6 +1231,7 @@ function QuizPage() {
 
         </div>
 
+
         {/* =================================================
             QUESTION CARD
             ================================================= */}
@@ -1104,53 +1243,62 @@ function QuizPage() {
           </div>
 
           <h3>
-            {currentQuestion + 1}. {question.question}
+            {currentQuestion + 1}.{' '}
+            {question.question}
           </h3>
+
 
           {/* OPTIONS */}
 
           <div className="options">
 
-            {question.options.map((option, index) => (
+            {question.options.map(
+              (option, index) => (
 
-              <label
-                key={option}
-                className={`option ${
-                  answers[question.id] === option
-                    ? 'option--selected'
-                    : ''
-                }`}
-              >
+                <label
+                  key={option}
+                  className={`option ${
+                    answers[question.id] ===
+                    option
+                      ? 'option--selected'
+                      : ''
+                  }`}
+                >
 
-                <input
-                  type="radio"
-                  name={`question-${question.id}`}
-                  checked={
-                    answers[question.id] === option
-                  }
-                  onChange={() =>
-                    handleAnswer(
-                      question.id,
+                  <input
+                    type="radio"
+                    name={`question-${question.id}`}
+                    checked={
+                      answers[question.id] ===
                       option
-                    )
-                  }
-                />
+                    }
+                    onChange={() =>
+                      handleAnswer(
+                        question.id,
+                        option
+                      )
+                    }
+                  />
 
-                <span className="option-letter">
-                  {String.fromCharCode(65 + index)}
-                </span>
+                  <span className="option-letter">
+                    {String.fromCharCode(
+                      65 + index
+                    )}
+                  </span>
 
-                <span className="option-text">
-                  {option}
-                </span>
+                  <span className="option-text">
+                    {option}
+                  </span>
 
-              </label>
+                </label>
 
-            ))}
+              )
+            )}
 
           </div>
 
         </div>
+
 
         {/* =================================================
             NAVIGATION
@@ -1173,7 +1321,9 @@ function QuizPage() {
 
           )}
 
-          {currentQuestion < questions.length - 1 ? (
+
+          {currentQuestion <
+          questions.length - 1 ? (
 
             <button
               className="submit-quiz"
@@ -1192,7 +1342,9 @@ function QuizPage() {
               className="submit-quiz"
               onClick={submitQuiz}
             >
-              Submit Quiz ✓
+              {getUnansweredCount() > 0
+                ? `Submit Quiz (${getUnansweredCount()} unanswered)`
+                : 'Submit Quiz ✓'}
             </button>
 
           )}

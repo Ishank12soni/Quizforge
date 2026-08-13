@@ -203,7 +203,7 @@ app.get("/api/quiz", async (req, res) => {
 
 
 // =========================================================
-// SUBMIT QUIZ + REVIEW + SAVE HISTORY
+// SUBMIT QUIZ + SCORING + REVIEW + SAVE HISTORY
 // =========================================================
 
 app.post("/api/quiz/submit", async (req, res) => {
@@ -213,9 +213,9 @@ app.post("/api/quiz/submit", async (req, res) => {
     const { answers } = req.body;
 
 
-    // -------------------------------------------------------
+    // =======================================================
     // VALIDATE QUIZ ID
-    // -------------------------------------------------------
+    // =======================================================
 
     if (!Number.isInteger(quizId) || quizId < 1) {
       return res.status(400).json({
@@ -224,9 +224,9 @@ app.post("/api/quiz/submit", async (req, res) => {
     }
 
 
-    // -------------------------------------------------------
+    // =======================================================
     // VALIDATE ANSWERS
-    // -------------------------------------------------------
+    // =======================================================
 
     if (!Array.isArray(answers)) {
       return res.status(400).json({
@@ -235,9 +235,9 @@ app.post("/api/quiz/submit", async (req, res) => {
     }
 
 
-    // -------------------------------------------------------
+    // =======================================================
     // GET QUESTIONS
-    // -------------------------------------------------------
+    // =======================================================
 
     const result = await pool.query(
       `
@@ -263,58 +263,151 @@ app.post("/api/quiz/submit", async (req, res) => {
     }
 
 
-    // -------------------------------------------------------
+    // =======================================================
+    // CREATE SAFE ANSWER MAP
+    // =======================================================
+    //
+    // Only the first submitted answer for a question
+    // will be considered.
+    //
+    // This prevents duplicate question IDs from affecting
+    // scoring.
+    //
+
+    const answerMap = new Map();
+
+    answers.forEach((answer) => {
+
+      const questionId = Number(
+        answer?.questionId
+      );
+
+      const selectedAnswer =
+        typeof answer?.selectedAnswer === "string"
+          ? answer.selectedAnswer
+          : "";
+
+      if (
+        Number.isInteger(questionId) &&
+        !answerMap.has(questionId)
+      ) {
+        answerMap.set(
+          questionId,
+          selectedAnswer
+        );
+      }
+
+    });
+
+
+    // =======================================================
     // CALCULATE SCORE
-    // -------------------------------------------------------
+    // =======================================================
 
     let score = 0;
+    let wrong = 0;
+    let unanswered = 0;
 
 
     const review = questions.map((question) => {
 
       const userAnswer =
-        answers.find(
-          (answer) =>
-            Number(answer.questionId) === question.id
-        )?.selectedAnswer || "";
+        answerMap.get(question.id) || "";
 
 
       const correctAnswer =
-        question.options[question.correct_answer];
+        question.options[
+          question.correct_answer
+        ];
+
+
+      const isUnanswered =
+        userAnswer.trim() === "";
 
 
       const isCorrect =
+        !isUnanswered &&
         userAnswer === correctAnswer;
 
 
       if (isCorrect) {
+
         score++;
+
+      } else if (isUnanswered) {
+
+        unanswered++;
+
+      } else {
+
+        wrong++;
+
       }
 
 
       return {
         questionId: question.id,
+
         question: question.question,
+
         userAnswer,
+
         correctAnswer,
+
         isCorrect,
-        explanation: getExplanation(question),
+
+        isUnanswered,
+
+        explanation:
+          getExplanation(question),
       };
 
     });
 
 
-    // -------------------------------------------------------
-    // RESULT
-    // -------------------------------------------------------
+    // =======================================================
+    // FINAL RESULT
+    // =======================================================
 
     const total = questions.length;
 
 
     const percentage =
       total > 0
-        ? Math.round((score / total) * 100)
+        ? Math.round(
+            (score / total) * 100
+          )
         : 0;
+
+
+    // =======================================================
+    // VERIFY RESULT COUNTS
+    // =======================================================
+
+    const calculatedTotal =
+      score +
+      wrong +
+      unanswered;
+
+
+    if (calculatedTotal !== total) {
+
+      console.error(
+        "Scoring validation error:",
+        {
+          score,
+          wrong,
+          unanswered,
+          total,
+        }
+      );
+
+      return res.status(500).json({
+        message:
+          "Scoring calculation failed",
+      });
+
+    }
 
 
     // =======================================================
@@ -342,6 +435,7 @@ app.post("/api/quiz/submit", async (req, res) => {
         ]
       );
 
+
       console.log(
         `Quiz attempt saved: Quiz ${quizId} | ${score}/${total} | ${percentage}%`
       );
@@ -356,16 +450,33 @@ app.post("/api/quiz/submit", async (req, res) => {
     }
 
 
-    // -------------------------------------------------------
+    // =======================================================
     // SEND RESULT TO FRONTEND
-    // -------------------------------------------------------
+    // =======================================================
 
     res.json({
+
       score,
+
       total,
+
       percentage,
+
+      correct: score,
+
+      wrong,
+
+      unanswered,
+
       review,
-      message: "Quiz submitted successfully",
+
+      topic:
+        quizTopics[quizId] ||
+        `Quiz ${quizId}`,
+
+      message:
+        "Quiz submitted successfully",
+
     });
 
 
@@ -377,7 +488,8 @@ app.post("/api/quiz/submit", async (req, res) => {
     );
 
     res.status(500).json({
-      message: "Failed to submit quiz",
+      message:
+        "Failed to submit quiz",
     });
 
   }
@@ -387,11 +499,6 @@ app.post("/api/quiz/submit", async (req, res) => {
 // =========================================================
 // GET QUIZ HISTORY
 // =========================================================
-//
-// This endpoint reads all saved quiz attempts from
-// PostgreSQL. The frontend will use this later for the
-// Performance Dashboard.
-//
 
 app.get("/api/quiz/history", async (req, res) => {
 
@@ -412,18 +519,35 @@ app.get("/api/quiz/history", async (req, res) => {
     );
 
 
-    // Add topic name for frontend
-    const history = result.rows.map((attempt) => ({
-      id: attempt.id,
-      quiz_id: attempt.quiz_id,
-      topic:
-        quizTopics[attempt.quiz_id] ||
-        `Quiz ${attempt.quiz_id}`,
-      score: attempt.score,
-      total_questions: attempt.total_questions,
-      percentage: attempt.percentage,
-      attempted_at: attempt.attempted_at,
-    }));
+    // =======================================================
+    // ADD TOPIC NAME
+    // =======================================================
+
+    const history =
+      result.rows.map((attempt) => ({
+
+        id: attempt.id,
+
+        quiz_id:
+          attempt.quiz_id,
+
+        topic:
+          quizTopics[attempt.quiz_id] ||
+          `Quiz ${attempt.quiz_id}`,
+
+        score:
+          attempt.score,
+
+        total_questions:
+          attempt.total_questions,
+
+        percentage:
+          attempt.percentage,
+
+        attempted_at:
+          attempt.attempted_at,
+
+      }));
 
 
     res.json(history);
@@ -436,7 +560,8 @@ app.get("/api/quiz/history", async (req, res) => {
     );
 
     res.status(500).json({
-      message: "Failed to fetch quiz history",
+      message:
+        "Failed to fetch quiz history",
     });
 
   }
@@ -447,12 +572,6 @@ app.get("/api/quiz/history", async (req, res) => {
 // =========================================================
 // GET QUIZ PERFORMANCE SUMMARY
 // =========================================================
-//
-// This endpoint calculates overall performance from the
-// saved quiz attempts.
-//
-// It will be used by the future Performance Dashboard.
-//
 
 app.get("/api/quiz/performance", async (req, res) => {
 
@@ -462,22 +581,27 @@ app.get("/api/quiz/performance", async (req, res) => {
       `
       SELECT
         COUNT(*) AS total_attempts,
+
         COALESCE(
           ROUND(AVG(percentage)),
           0
         ) AS average_score,
+
         COALESCE(
           MAX(percentage),
           0
         ) AS best_score,
+
         COALESCE(
           SUM(score),
           0
         ) AS total_correct,
+
         COALESCE(
           SUM(total_questions),
           0
         ) AS total_questions
+
       FROM quiz_attempts
       `
     );
@@ -487,20 +611,32 @@ app.get("/api/quiz/performance", async (req, res) => {
 
 
     res.json({
+
       totalAttempts:
-        Number(data.total_attempts),
+        Number(
+          data.total_attempts
+        ),
 
       averageScore:
-        Number(data.average_score),
+        Number(
+          data.average_score
+        ),
 
       bestScore:
-        Number(data.best_score),
+        Number(
+          data.best_score
+        ),
 
       totalCorrect:
-        Number(data.total_correct),
+        Number(
+          data.total_correct
+        ),
 
       totalQuestions:
-        Number(data.total_questions),
+        Number(
+          data.total_questions
+        ),
+
     });
 
   } catch (error) {
@@ -511,7 +647,8 @@ app.get("/api/quiz/performance", async (req, res) => {
     );
 
     res.status(500).json({
-      message: "Failed to fetch performance",
+      message:
+        "Failed to fetch performance",
     });
 
   }
