@@ -1883,6 +1883,721 @@ app.post("/api/admin/quizzes", async (req, res) => {
 
 });
 
+// =========================================================
+// ADMIN — GET SINGLE QUIZ WITH QUESTIONS
+// =========================================================
+// GET /api/admin/quizzes/:quizId
+// =========================================================
+
+app.get("/api/admin/quizzes/:quizId", async (req, res) => {
+
+  try {
+
+    const quizId = Number(req.params.quizId);
+
+    if (
+      !Number.isInteger(quizId) ||
+      quizId < 1
+    ) {
+
+      return res.status(400).json({
+        message: "Invalid quiz ID",
+      });
+
+    }
+
+
+    // -------------------------------------------------------
+    // GET QUIZ
+    // -------------------------------------------------------
+
+    const quizResult =
+      await pool.query(
+        `
+        SELECT
+          id,
+          title,
+          description,
+          created_at
+        FROM quizzes
+        WHERE id = $1
+        `,
+        [quizId]
+      );
+
+
+    if (quizResult.rows.length === 0) {
+
+      return res.status(404).json({
+        message: "Quiz not found",
+      });
+
+    }
+
+
+    const quiz =
+      quizResult.rows[0];
+
+
+    // -------------------------------------------------------
+    // GET QUESTIONS
+    // -------------------------------------------------------
+
+    const questionsResult =
+      await pool.query(
+        `
+        SELECT
+          id,
+          quiz_id,
+          question,
+          options,
+          correct_answer
+        FROM questions
+        WHERE quiz_id = $1
+        ORDER BY id
+        `,
+        [quizId]
+      );
+
+
+    const questions =
+      questionsResult.rows.map(
+        (question) => ({
+
+          ...question,
+
+          options:
+            normalizeOptions(
+              question.options
+            ),
+
+        })
+      );
+
+
+    return res.json({
+
+      quiz,
+
+      questions,
+
+    });
+
+
+  } catch (error) {
+
+    console.error(
+      "Error fetching single quiz:",
+      error
+    );
+
+
+    return res.status(500).json({
+      message:
+        "Failed to fetch quiz",
+    });
+
+  }
+
+});
+
+
+// =========================================================
+// ADMIN — UPDATE QUIZ
+// =========================================================
+// PUT /api/admin/quizzes/:quizId
+//
+// Updates the quiz title, description and questions.
+// =========================================================
+
+app.put("/api/admin/quizzes/:quizId", async (req, res) => {
+
+  const client =
+    await pool.connect();
+
+
+  try {
+
+    const quizId =
+      Number(req.params.quizId);
+
+
+    const {
+      title,
+      description,
+      questions,
+    } = req.body;
+
+
+    // -------------------------------------------------------
+    // VALIDATE QUIZ ID
+    // -------------------------------------------------------
+
+    if (
+      !Number.isInteger(quizId) ||
+      quizId < 1
+    ) {
+
+      return res.status(400).json({
+        message:
+          "Invalid quiz ID",
+      });
+
+    }
+
+
+    // -------------------------------------------------------
+    // VALIDATE TITLE
+    // -------------------------------------------------------
+
+    if (
+      typeof title !== "string" ||
+      !title.trim()
+    ) {
+
+      return res.status(400).json({
+        message:
+          "Quiz title is required",
+      });
+
+    }
+
+
+    // -------------------------------------------------------
+    // VALIDATE DESCRIPTION
+    // -------------------------------------------------------
+
+    if (
+      description !== undefined &&
+      description !== null &&
+      typeof description !== "string"
+    ) {
+
+      return res.status(400).json({
+        message:
+          "Quiz description must be text",
+      });
+
+    }
+
+
+    // -------------------------------------------------------
+    // VALIDATE QUESTIONS
+    // -------------------------------------------------------
+
+    if (
+      !Array.isArray(questions) ||
+      questions.length === 0
+    ) {
+
+      return res.status(400).json({
+        message:
+          "At least one question is required",
+      });
+
+    }
+
+
+    for (
+      let i = 0;
+      i < questions.length;
+      i++
+    ) {
+
+      const question =
+        questions[i];
+
+
+      if (
+        !question ||
+        typeof question.question !== "string" ||
+        !question.question.trim()
+      ) {
+
+        return res.status(400).json({
+          message:
+            `Question ${i + 1} is required`,
+        });
+
+      }
+
+
+      if (
+        !Array.isArray(question.options) ||
+        question.options.length !== 4
+      ) {
+
+        return res.status(400).json({
+          message:
+            `Question ${i + 1} must have exactly 4 options`,
+        });
+
+      }
+
+
+      for (
+        let j = 0;
+        j < question.options.length;
+        j++
+      ) {
+
+        if (
+          typeof question.options[j] !== "string" ||
+          !question.options[j].trim()
+        ) {
+
+          return res.status(400).json({
+            message:
+              `Option ${j + 1} of question ${i + 1} is required`,
+          });
+
+        }
+
+      }
+
+
+      const correctAnswer =
+        Number(
+          question.correct_answer
+        );
+
+
+      if (
+        !Number.isInteger(correctAnswer) ||
+        correctAnswer < 0 ||
+        correctAnswer > 3
+      ) {
+
+        return res.status(400).json({
+          message:
+            `Correct answer for question ${i + 1} must be 0, 1, 2, or 3`,
+        });
+
+      }
+
+    }
+
+
+    // -------------------------------------------------------
+    // CHECK QUIZ EXISTS
+    // -------------------------------------------------------
+
+    const existingQuiz =
+      await client.query(
+        `
+        SELECT
+          id
+        FROM quizzes
+        WHERE id = $1
+        `,
+        [quizId]
+      );
+
+
+    if (existingQuiz.rows.length === 0) {
+
+      return res.status(404).json({
+        message:
+          "Quiz not found",
+      });
+
+    }
+
+
+    // -------------------------------------------------------
+    // START TRANSACTION
+    // -------------------------------------------------------
+
+    await client.query("BEGIN");
+
+
+    // -------------------------------------------------------
+    // UPDATE QUIZ
+    // -------------------------------------------------------
+
+    const quizResult =
+      await client.query(
+        `
+        UPDATE quizzes
+        SET
+          title = $1,
+          description = $2
+        WHERE id = $3
+        RETURNING
+          id,
+          title,
+          description,
+          created_at
+        `,
+        [
+          title.trim(),
+
+          typeof description === "string"
+            ? description.trim()
+            : "",
+
+          quizId,
+        ]
+      );
+
+
+    const quiz =
+      quizResult.rows[0];
+
+
+    // -------------------------------------------------------
+    // DELETE OLD QUESTIONS
+    // -------------------------------------------------------
+
+    await client.query(
+      `
+      DELETE FROM questions
+      WHERE quiz_id = $1
+      `,
+      [quizId]
+    );
+
+
+    // -------------------------------------------------------
+    // INSERT UPDATED QUESTIONS
+    // -------------------------------------------------------
+
+    const updatedQuestions = [];
+
+
+    for (
+      const question
+      of questions
+    ) {
+
+      const options =
+        question.options.map(
+          (option) =>
+            String(option).trim()
+        );
+
+
+      const questionResult =
+        await client.query(
+          `
+          INSERT INTO questions
+          (
+            quiz_id,
+            question,
+            options,
+            correct_answer
+          )
+          VALUES
+          (
+            $1,
+            $2,
+            $3,
+            $4
+          )
+          RETURNING
+            id,
+            quiz_id,
+            question,
+            options,
+            correct_answer
+          `,
+          [
+            quizId,
+
+            question.question.trim(),
+
+            JSON.stringify(options),
+
+            Number(
+              question.correct_answer
+            ),
+          ]
+        );
+
+
+      const createdQuestion =
+        questionResult.rows[0];
+
+
+      updatedQuestions.push({
+
+        ...createdQuestion,
+
+        options:
+          normalizeOptions(
+            createdQuestion.options
+          ),
+
+      });
+
+    }
+
+
+    // -------------------------------------------------------
+    // COMMIT
+    // -------------------------------------------------------
+
+    await client.query("COMMIT");
+
+
+    console.log(
+      `Admin updated quiz: ${quiz.title} | ID: ${quiz.id}`
+    );
+
+
+    return res.json({
+
+      message:
+        "Quiz updated successfully",
+
+      quiz,
+
+      questions:
+        updatedQuestions,
+
+    });
+
+
+  } catch (error) {
+
+    try {
+
+      await client.query("ROLLBACK");
+
+    } catch (rollbackError) {
+
+      console.error(
+        "Rollback error:",
+        rollbackError
+      );
+
+    }
+
+
+    console.error(
+      "Error updating quiz:",
+      error
+    );
+
+
+    return res.status(500).json({
+
+      message:
+        "Failed to update quiz",
+
+      error:
+        error.message,
+
+    });
+
+
+  } finally {
+
+    client.release();
+
+  }
+
+});
+
+
+// =========================================================
+// ADMIN — DELETE QUIZ
+// =========================================================
+// DELETE /api/admin/quizzes/:quizId
+//
+// A quiz with existing student attempts cannot be deleted.
+// This protects student history.
+// =========================================================
+
+app.delete("/api/admin/quizzes/:quizId", async (req, res) => {
+
+  const client =
+    await pool.connect();
+
+
+  try {
+
+    const quizId =
+      Number(req.params.quizId);
+
+
+    // -------------------------------------------------------
+    // VALIDATE QUIZ ID
+    // -------------------------------------------------------
+
+    if (
+      !Number.isInteger(quizId) ||
+      quizId < 1
+    ) {
+
+      return res.status(400).json({
+        message:
+          "Invalid quiz ID",
+      });
+
+    }
+
+
+    // -------------------------------------------------------
+    // CHECK QUIZ
+    // -------------------------------------------------------
+
+    const quizResult =
+      await client.query(
+        `
+        SELECT
+          id,
+          title
+        FROM quizzes
+        WHERE id = $1
+        `,
+        [quizId]
+      );
+
+
+    if (quizResult.rows.length === 0) {
+
+      return res.status(404).json({
+        message:
+          "Quiz not found",
+      });
+
+    }
+
+
+    const quiz =
+      quizResult.rows[0];
+
+
+    // -------------------------------------------------------
+    // CHECK EXISTING ATTEMPTS
+    // -------------------------------------------------------
+
+    const attemptsResult =
+      await client.query(
+        `
+        SELECT
+          COUNT(*) AS count
+        FROM quiz_attempts
+        WHERE quiz_id = $1
+        `,
+        [quizId]
+      );
+
+
+    const attemptCount =
+      Number(
+        attemptsResult.rows[0].count
+      );
+
+
+    if (attemptCount > 0) {
+
+      return res.status(409).json({
+
+        message:
+          `This quiz cannot be deleted because ${attemptCount} student attempt${attemptCount === 1 ? "" : "s"} exist. Student history must be preserved.`,
+
+      });
+
+    }
+
+
+    // -------------------------------------------------------
+    // START TRANSACTION
+    // -------------------------------------------------------
+
+    await client.query("BEGIN");
+
+
+    // -------------------------------------------------------
+    // DELETE QUESTIONS
+    // -------------------------------------------------------
+
+    await client.query(
+      `
+      DELETE FROM questions
+      WHERE quiz_id = $1
+      `,
+      [quizId]
+    );
+
+
+    // -------------------------------------------------------
+    // DELETE QUIZ
+    // -------------------------------------------------------
+
+    await client.query(
+      `
+      DELETE FROM quizzes
+      WHERE id = $1
+      `,
+      [quizId]
+    );
+
+
+    // -------------------------------------------------------
+    // COMMIT
+    // -------------------------------------------------------
+
+    await client.query("COMMIT");
+
+
+    console.log(
+      `Admin deleted quiz: ${quiz.title} | ID: ${quizId}`
+    );
+
+
+    return res.json({
+
+      message:
+        "Quiz deleted successfully",
+
+      quizId,
+
+    });
+
+
+  } catch (error) {
+
+    try {
+
+      await client.query("ROLLBACK");
+
+    } catch (rollbackError) {
+
+      console.error(
+        "Rollback error:",
+        rollbackError
+      );
+
+    }
+
+
+    console.error(
+      "Error deleting quiz:",
+      error
+    );
+
+
+    return res.status(500).json({
+
+      message:
+        "Failed to delete quiz",
+
+      error:
+        error.message,
+
+    });
+
+
+  } finally {
+
+    client.release();
+
+  }
+
+});
 
 // =========================================================
 // START SERVER
