@@ -38,3 +38,30 @@ src/
 - Project foundation with React + Vite
 - Professional homepage with navbar, hero, topic cards, features, and footer
 - Responsive design for laptop, tablet, and mobile
+## Project Architecture
+
+Quizforge follows a separate frontend and backend architecture.
+
+```text
+Quizforge/
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── styles/
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── package.json
+│   └── vite.config.js
+│
+├── backend/
+│   ├── server.js
+│   ├── db.js
+│   ├── package.json
+│   └── package-lock.json
+│
+├── public/
+├── README.md
+├── package.json
+└── .gitignore
