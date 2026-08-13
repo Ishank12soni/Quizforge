@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import API_BASE_URL from '../api';
+
 import './HistoryPage.css';
 
 
@@ -61,11 +63,11 @@ function HistoryPage() {
   useEffect(() => {
 
     const studentId =
-      Number(
-        localStorage.getItem(
-          'quizforge_student_id'
-        )
-      ) || 0;
+  Number(
+    localStorage.getItem(
+      'quizforge_student_id'
+    )
+  ) || 0;
 
 
     if (!studentId) {
@@ -91,7 +93,7 @@ function HistoryPage() {
 
         const response =
           await fetch(
-            `http://localhost:5001/api/quiz/history?studentId=${studentId}`
+            `${API_BASE_URL}/api/quiz/history?studentId=${studentId}`
           );
 
 
@@ -298,6 +300,15 @@ function HistoryPage() {
               {error}
             </p>
 
+            <button
+              className="history-button"
+              onClick={() =>
+                navigate('/student')
+              }
+            >
+              Enter Name Again
+            </button>
+
           </div>
 
         </div>
@@ -354,6 +365,15 @@ function HistoryPage() {
               Complete your first Industrial IoT quiz
               to see your performance here.
             </p>
+
+            <button
+              className="history-button"
+              onClick={() =>
+                navigate('/student/home')
+              }
+            >
+              Start Your First Quiz →
+            </button>
 
           </div>
 

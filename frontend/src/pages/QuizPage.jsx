@@ -4,6 +4,8 @@ import {
   useNavigate,
 } from 'react-router-dom';
 
+import API_BASE_URL from '../api';
+
 import './QuizPage.css';
 
 
@@ -474,14 +476,8 @@ const visualSets = {
 // FIND VISUAL FOR QUESTION
 // =========================================================
 
-function getQuestionVisual(
-  questionText,
-  topic
-) {
-
-  const text =
-    String(questionText || '').toLowerCase();
-
+function getQuestionVisual(questionText, topic) {
+  const text = String(questionText || '').toLowerCase();
 
   if (
     text.includes('temperature') ||
@@ -491,7 +487,6 @@ function getQuestionVisual(
     return visualSets.temperature;
   }
 
-
   if (
     text.includes('actuator') ||
     text.includes('motor') ||
@@ -499,16 +494,6 @@ function getQuestionVisual(
   ) {
     return visualSets.actuator;
   }
-
-
-  if (
-    text.includes('sensor') ||
-    text.includes('sensing') ||
-    text.includes('detect')
-  ) {
-    return visualSets.sensor;
-  }
-
 
   if (
     text.includes('mqtt') ||
@@ -519,7 +504,6 @@ function getQuestionVisual(
     return visualSets.mqtt;
   }
 
-
   if (
     text.includes('http') ||
     text.includes('https')
@@ -527,46 +511,33 @@ function getQuestionVisual(
     return visualSets.http;
   }
 
-
   if (
     text.includes('plc') ||
-    text.includes(
-      'programmable logic controller'
-    )
+    text.includes('programmable logic controller')
   ) {
     return visualSets.plc;
   }
 
-
   if (
     text.includes('scada') ||
-    text.includes(
-      'supervisory control'
-    )
+    text.includes('supervisory control')
   ) {
     return visualSets.scada;
   }
 
-
   if (
     text.includes('edge') ||
-    text.includes(
-      'edge computing'
-    )
+    text.includes('edge computing')
   ) {
     return visualSets.edge;
   }
 
-
   if (
     text.includes('cloud') ||
-    text.includes(
-      'cloud computing'
-    )
+    text.includes('cloud computing')
   ) {
     return visualSets.cloud;
   }
-
 
   if (
     text.includes('encryption') ||
@@ -576,17 +547,21 @@ function getQuestionVisual(
     return visualSets.encryption;
   }
 
-
   if (
     text.includes('authentication') ||
-    text.includes(
-      'authenticate'
-    ) ||
+    text.includes('authenticate') ||
     text.includes('identity')
   ) {
     return visualSets.authentication;
   }
 
+  if (
+    text.includes('sensor') ||
+    text.includes('sensing') ||
+    text.includes('detect')
+  ) {
+    return visualSets.sensor;
+  }
 
   return topic.flow;
 }
@@ -597,39 +572,21 @@ function getQuestionVisual(
 // =========================================================
 
 function QuizPage() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
-  const [searchParams] =
-    useSearchParams();
+  const quizId = searchParams.get('quizId') || '1';
 
-  const navigate =
-    useNavigate();
-
-
-  const quizId =
-    searchParams.get('quizId') || '1';
-
-
-  const [questions, setQuestions] =
-    useState([]);
-
-  const [answers, setAnswers] =
-    useState({});
-
-  const [result, setResult] =
-    useState(null);
-
-  const [loading, setLoading] =
-    useState(true);
-
-  const [currentQuestion, setCurrentQuestion] =
-    useState(0);
-
-  const [submitting, setSubmitting] =
-    useState(false);
-
+  const [questions, setQuestions] = useState([]);
+  const [answers, setAnswers] = useState({});
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
 
   const topic =
     topicInfo[quizId] ||
+    topicInfo[Number(quizId)] ||
     topicInfo[1];
 
 
@@ -638,59 +595,54 @@ function QuizPage() {
   // =======================================================
 
   useEffect(() => {
+    let cancelled = false;
 
-    setLoading(true);
+    const loadQuiz = async () => {
+      try {
+        setLoading(true);
+        setQuestions([]);
+        setAnswers({});
+        setResult(null);
+        setCurrentQuestion(0);
 
-    setQuestions([]);
-
-    setAnswers({});
-
-    setResult(null);
-
-    setCurrentQuestion(0);
-
-
-    fetch(
-      `http://localhost:5001/api/quiz?quizId=${quizId}`
-    )
-
-      .then((response) => {
-
-        if (!response.ok) {
-
-          throw new Error(
-            'Failed to load quiz'
-          );
-
-        }
-
-        return response.json();
-
-      })
-
-      .then((data) => {
-
-        setQuestions(
-          Array.isArray(data)
-            ? data
-            : []
+        const response = await fetch(
+          `${API_BASE_URL}/api/quiz?quizId=${quizId}`
         );
 
-        setLoading(false);
+        if (!response.ok) {
+          throw new Error('Failed to load quiz');
+        }
 
-      })
+        const data = await response.json();
 
-      .catch((error) => {
-
+        if (!cancelled) {
+          setQuestions(
+            Array.isArray(data)
+              ? data
+              : []
+          );
+        }
+      } catch (error) {
         console.error(
           'Quiz loading error:',
           error
         );
 
-        setLoading(false);
+        if (!cancelled) {
+          setQuestions([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
 
-      });
+    loadQuiz();
 
+    return () => {
+      cancelled = true;
+    };
   }, [quizId]);
 
 
@@ -702,18 +654,10 @@ function QuizPage() {
     questionId,
     answer
   ) => {
-
-    setAnswers(
-      (previous) => ({
-
-        ...previous,
-
-        [questionId]:
-          answer,
-
-      })
-    );
-
+    setAnswers((previous) => ({
+      ...previous,
+      [questionId]: answer,
+    }));
   };
 
 
@@ -722,16 +666,12 @@ function QuizPage() {
   // =======================================================
 
   const submitQuiz = async () => {
-
     if (submitting) {
       return;
     }
 
-
     try {
-
       setSubmitting(true);
-
 
       // ---------------------------------------------------
       // GET STUDENT NAME
@@ -742,17 +682,13 @@ function QuizPage() {
           'quizforge_student_name'
         ) || '';
 
-
       if (!studentName.trim()) {
-
         alert(
           'Please enter your name before submitting the quiz.'
         );
 
         setSubmitting(false);
-
         return;
-
       }
 
 
@@ -769,14 +705,13 @@ function QuizPage() {
 
 
       // ---------------------------------------------------
-      // CREATE / FIND STUDENT IF NEEDED
+      // CREATE STUDENT IF NEEDED
       // ---------------------------------------------------
 
       if (!studentId) {
-
         const studentResponse =
           await fetch(
-            'http://localhost:5001/api/students',
+            `${API_BASE_URL}/api/students`,
             {
               method: 'POST',
 
@@ -792,61 +727,36 @@ function QuizPage() {
             }
           );
 
-
         if (!studentResponse.ok) {
-
           const errorData =
             await studentResponse
               .json()
-              .catch(
-                () => ({})
-              );
-
+              .catch(() => ({}));
 
           throw new Error(
             errorData.message ||
               'Failed to save student'
           );
-
         }
-
 
         const student =
           await studentResponse.json();
-
-
-        // =================================================
-        // IMPORTANT FIX
-        // Backend returns:
-        //
-        // {
-        //   studentId: 1,
-        //   studentName: "Ishank Verma"
-        // }
-        //
-        // So use student.studentId
-        // =================================================
 
         studentId =
           Number(
             student.studentId
           );
 
-
         if (!studentId) {
-
           throw new Error(
             'Student ID was not returned by the server.'
           );
-
         }
-
 
         localStorage.setItem(
           'quizforge_student_id',
           String(studentId)
         );
-
       }
 
 
@@ -855,19 +765,15 @@ function QuizPage() {
       // ---------------------------------------------------
 
       const formattedAnswers =
-        questions.map(
-          (question) => ({
+        questions.map((question) => ({
+          questionId:
+            question.id,
 
-            questionId:
-              question.id,
-
-            selectedAnswer:
-              answers[
-                question.id
-              ] || '',
-
-          })
-        );
+          selectedAnswer:
+            answers[
+              question.id
+            ] || '',
+        }));
 
 
       // ---------------------------------------------------
@@ -876,7 +782,7 @@ function QuizPage() {
 
       const response =
         await fetch(
-          `http://localhost:5001/api/quiz/submit?quizId=${quizId}`,
+          `${API_BASE_URL}/api/quiz/submit?quizId=${quizId}`,
           {
             method: 'POST',
 
@@ -886,74 +792,49 @@ function QuizPage() {
             },
 
             body: JSON.stringify({
-
               studentId:
                 studentId,
 
               answers:
                 formattedAnswers,
-
             }),
-
           }
         );
 
-
       if (!response.ok) {
-
         const errorData =
           await response
             .json()
-            .catch(
-              () => ({})
-            );
-
+            .catch(() => ({}));
 
         throw new Error(
           errorData.message ||
             'Failed to submit quiz'
         );
-
       }
-
 
       const data =
         await response.json();
 
-
-      // ---------------------------------------------------
-      // SAVE RESULT
-      // ---------------------------------------------------
-
       setResult(data);
-
 
       window.scrollTo({
         top: 0,
         behavior: 'smooth',
       });
-
-
     } catch (error) {
-
       console.error(
         'Quiz submission error:',
         error
       );
 
-
       alert(
         error.message ||
           'Unable to submit quiz. Please try again.'
       );
-
-
     } finally {
-
       setSubmitting(false);
-
     }
-
   };
 
 
@@ -962,18 +843,14 @@ function QuizPage() {
   // =======================================================
 
   const restartQuiz = () => {
-
     setAnswers({});
-
     setResult(null);
-
     setCurrentQuestion(0);
 
     window.scrollTo({
       top: 0,
       behavior: 'smooth',
     });
-
   };
 
 
@@ -982,11 +859,8 @@ function QuizPage() {
   // =======================================================
 
   if (loading) {
-
     return (
-
       <section className="quiz-page">
-
         <div className="quiz-container loading-container">
 
           <div className="loading-icon">
@@ -1002,24 +876,18 @@ function QuizPage() {
           </p>
 
         </div>
-
       </section>
-
     );
-
   }
 
 
   // =======================================================
-  // EMPTY
+  // EMPTY QUIZ
   // =======================================================
 
   if (questions.length === 0) {
-
     return (
-
       <section className="quiz-page">
-
         <div className="quiz-container empty-container">
 
           <div className="loading-icon">
@@ -1044,11 +912,8 @@ function QuizPage() {
           </button>
 
         </div>
-
       </section>
-
     );
-
   }
 
 
@@ -1057,45 +922,39 @@ function QuizPage() {
   // =======================================================
 
   if (result) {
-
     const correctCount =
-      result.score;
+      Number(result.score) || 0;
+
+    const total =
+      Number(result.total) ||
+      questions.length;
 
     const wrongCount =
-      result.total -
-      result.score;
+      Math.max(
+        total - correctCount,
+        0
+      );
+
+    const percentage =
+      Number(result.percentage) || 0;
 
 
     let performanceTitle =
       'Keep Practicing! 📚';
 
-
-    if (
-      result.percentage >= 90
-    ) {
-
+    if (percentage >= 90) {
       performanceTitle =
         'Outstanding Performance! 🏆';
-
-    } else if (
-      result.percentage >= 80
-    ) {
-
+    } else if (percentage >= 80) {
       performanceTitle =
         'Excellent Work! 🚀';
-
-    } else if (
-      result.percentage >= 60
-    ) {
-
+    } else if (percentage >= 60) {
       performanceTitle =
         'Good Job! 💪';
-
     }
 
 
     return (
-
       <section className="quiz-page">
 
         <div className="quiz-container result-container">
@@ -1103,82 +962,56 @@ function QuizPage() {
 
           {/* =================================================
               RESULT HERO
-          ================================================= */}
+              ================================================= */}
 
           <div className="result-hero">
 
             <div className="result-icon">
-
-              {result.percentage >= 80
+              {percentage >= 80
                 ? '🎉'
                 : '📚'}
-
             </div>
-
 
             <p className="result-label">
               QUIZ COMPLETED
             </p>
 
-
             <h1>
               {performanceTitle}
             </h1>
 
-
             <p className="result-topic">
-
               {topic.icon}{' '}
-
               {topic.name}
-
             </p>
 
-
-            {/* STUDENT NAME */}
-
             <p className="result-student-name">
-
               👤{' '}
-
               {result.studentName ||
                 localStorage.getItem(
                   'quizforge_student_name'
                 ) ||
                 'Student'}
-
             </p>
-
 
             <div className="score-circle">
 
               <strong>
-                {result.percentage}%
+                {percentage}%
               </strong>
 
               <span>
-
-                {result.score} /{' '}
-
-                {result.total}
-
+                {correctCount} / {total}
               </span>
 
             </div>
 
-
             <p className="result-message">
-
               You answered{' '}
-
-              {result.score}{' '}
-
+              {correctCount}{' '}
               out of{' '}
-
-              {result.total}{' '}
-
+              {total}{' '}
               questions correctly.
-
             </p>
 
           </div>
@@ -1186,7 +1019,7 @@ function QuizPage() {
 
           {/* =================================================
               SCORE SUMMARY
-          ================================================= */}
+              ================================================= */}
 
           <div className="score-summary">
 
@@ -1197,7 +1030,6 @@ function QuizPage() {
               </span>
 
               <div>
-
                 <strong>
                   {correctCount}
                 </strong>
@@ -1205,7 +1037,6 @@ function QuizPage() {
                 <p>
                   Correct
                 </p>
-
               </div>
 
             </div>
@@ -1218,7 +1049,6 @@ function QuizPage() {
               </span>
 
               <div>
-
                 <strong>
                   {wrongCount}
                 </strong>
@@ -1226,7 +1056,6 @@ function QuizPage() {
                 <p>
                   Wrong
                 </p>
-
               </div>
 
             </div>
@@ -1239,15 +1068,13 @@ function QuizPage() {
               </span>
 
               <div>
-
                 <strong>
-                  {result.percentage}%
+                  {percentage}%
                 </strong>
 
                 <p>
                   Score
                 </p>
-
               </div>
 
             </div>
@@ -1257,7 +1084,7 @@ function QuizPage() {
 
           {/* =================================================
               PERFORMANCE ANALYSIS
-          ================================================= */}
+              ================================================= */}
 
           <div className="performance-section">
 
@@ -1293,7 +1120,7 @@ function QuizPage() {
                   </span>
 
                   <strong>
-                    {result.percentage}%
+                    {percentage}%
                   </strong>
 
                 </div>
@@ -1306,7 +1133,7 @@ function QuizPage() {
                   </span>
 
                   <strong>
-                    {result.total}
+                    {total}
                   </strong>
 
                 </div>
@@ -1320,7 +1147,13 @@ function QuizPage() {
                   className="performance-fill"
                   style={{
                     width:
-                      `${result.percentage}%`,
+                      `${Math.min(
+                        Math.max(
+                          percentage,
+                          0
+                        ),
+                        100
+                      )}%`,
                   }}
                 />
 
@@ -1376,28 +1209,24 @@ function QuizPage() {
               <div className="performance-message">
 
                 <strong>
-
-                  {result.percentage >= 90
+                  {percentage >= 90
                     ? '🏆 Outstanding Performance'
-                    : result.percentage >= 80
+                    : percentage >= 80
                     ? '🚀 Excellent Performance'
-                    : result.percentage >= 60
+                    : percentage >= 60
                     ? '💪 Good Performance'
                     : '📚 Needs More Practice'}
-
                 </strong>
 
 
                 <p>
-
-                  {result.percentage >= 90
+                  {percentage >= 90
                     ? 'Excellent understanding of this Industrial IoT topic.'
-                    : result.percentage >= 80
+                    : percentage >= 80
                     ? 'You have a strong understanding. Keep practicing to reach the top.'
-                    : result.percentage >= 60
+                    : percentage >= 60
                     ? 'Good foundation. Review the explanations below to improve further.'
                     : 'Review the explanations and visual concepts below, then try the quiz again.'}
-
                 </p>
 
               </div>
@@ -1409,7 +1238,7 @@ function QuizPage() {
 
           {/* =================================================
               QUICK CONCEPT REVIEW
-          ================================================= */}
+              ================================================= */}
 
           <div className="learning-section">
 
@@ -1467,11 +1296,9 @@ function QuizPage() {
 
                     {index <
                       topic.flow.length - 1 && (
-
                       <div className="iot-arrow">
                         →
                       </div>
-
                     )}
 
                   </div>
@@ -1486,7 +1313,7 @@ function QuizPage() {
 
           {/* =================================================
               ANSWER REVIEW
-          ================================================= */}
+              ================================================= */}
 
           <div className="review-section">
 
@@ -1511,7 +1338,7 @@ function QuizPage() {
             </div>
 
 
-            {result.review &&
+            {Array.isArray(result.review) &&
               result.review.map(
                 (item, index) => {
 
@@ -1523,7 +1350,6 @@ function QuizPage() {
 
 
                   return (
-
                     <div
                       className={`review-card ${
                         item.isCorrect
@@ -1531,9 +1357,11 @@ function QuizPage() {
                           : 'review-card--wrong'
                       }`}
                       key={
-                        item.questionId
+                        item.questionId ||
+                        index
                       }
                     >
+
 
                       {/* QUESTION HEADER */}
 
@@ -1543,7 +1371,6 @@ function QuizPage() {
                           Question {index + 1}
                         </div>
 
-
                         <span
                           className={
                             item.isCorrect
@@ -1551,11 +1378,9 @@ function QuizPage() {
                               : 'answer-status wrong'
                           }
                         >
-
                           {item.isCorrect
                             ? '✓ Correct'
                             : '✕ Wrong'}
-
                         </span>
 
                       </div>
@@ -1564,9 +1389,7 @@ function QuizPage() {
                       {/* QUESTION */}
 
                       <h3 className="review-question">
-
                         {item.question}
-
                       </h3>
 
 
@@ -1587,10 +1410,8 @@ function QuizPage() {
                           </span>
 
                           <strong>
-
                             {item.userAnswer ||
                               'Not answered'}
-
                           </strong>
 
                         </div>
@@ -1603,9 +1424,7 @@ function QuizPage() {
                           </span>
 
                           <strong>
-
                             {item.correctAnswer}
-
                           </strong>
 
                         </div>
@@ -1628,7 +1447,8 @@ function QuizPage() {
                         </div>
 
                         <p>
-                          {item.explanation}
+                          {item.explanation ||
+                            'Review this concept carefully and try the question again.'}
                         </p>
 
                       </div>
@@ -1669,7 +1489,7 @@ function QuizPage() {
 
                               <div
                                 className="iot-flow-group"
-                                key={`${item.questionId}-${step.title}`}
+                                key={`${item.questionId || index}-${step.title}`}
                               >
 
                                 <div className="iot-flow-card">
@@ -1695,11 +1515,9 @@ function QuizPage() {
 
                                 {visualIndex <
                                   questionVisual.length - 1 && (
-
                                   <div className="iot-arrow">
                                     →
                                   </div>
-
                                 )}
 
                               </div>
@@ -1717,9 +1535,7 @@ function QuizPage() {
                       <div className="question-visual">
 
                         <span className="question-visual__icon">
-
                           {topic.icon}
-
                         </span>
 
                         <div>
@@ -1737,9 +1553,7 @@ function QuizPage() {
                       </div>
 
                     </div>
-
                   );
-
                 }
               )}
 
@@ -1748,7 +1562,7 @@ function QuizPage() {
 
           {/* =================================================
               RESULT ACTIONS
-          ================================================= */}
+              ================================================= */}
 
           <div className="quiz-actions result-actions">
 
@@ -1784,9 +1598,7 @@ function QuizPage() {
         </div>
 
       </section>
-
     );
-
   }
 
 
@@ -1798,12 +1610,44 @@ function QuizPage() {
     questions[currentQuestion];
 
 
+  // Safety check
+  if (!question) {
+    return (
+      <section className="quiz-page">
+        <div className="quiz-container empty-container">
+
+          <div className="loading-icon">
+            ⚠️
+          </div>
+
+          <h2>
+            Question Not Found
+          </h2>
+
+          <p>
+            Something went wrong while loading the question.
+          </p>
+
+          <button
+            className="submit-quiz"
+            onClick={() =>
+              navigate('/student/home')
+            }
+          >
+            🏠 Back to Home
+          </button>
+
+        </div>
+      </section>
+    );
+  }
+
+
   // =======================================================
   // QUIZ SCREEN
   // =======================================================
 
   return (
-
     <section className="quiz-page">
 
       <div className="quiz-container">
@@ -1816,11 +1660,8 @@ function QuizPage() {
         <div className="quiz-header">
 
           <span className="quiz-topic-badge">
-
             {topic.icon}{' '}
-
             {topic.name}
-
           </span>
 
 
@@ -1830,26 +1671,19 @@ function QuizPage() {
 
 
           <p className="quiz-subtitle">
-
             Test your{' '}
-
             {topic.name}{' '}
-
             knowledge.
-
           </p>
 
 
           {/* STUDENT NAME */}
 
           <div className="quiz-student-display">
-
             👤{' '}
-
             {localStorage.getItem(
               'quizforge_student_name'
             ) || 'Student'}
-
           </div>
 
         </div>
@@ -1864,20 +1698,14 @@ function QuizPage() {
           <div className="quiz-progress-text">
 
             <span>
-
               Question{' '}
-
               {currentQuestion + 1}{' '}
-
               of{' '}
-
               {questions.length}
-
             </span>
 
 
             <strong>
-
               {Math.round(
                 (
                   (currentQuestion + 1) /
@@ -1885,9 +1713,7 @@ function QuizPage() {
                 ) *
                   100
               )}
-
               %
-
             </strong>
 
           </div>
@@ -1921,20 +1747,14 @@ function QuizPage() {
         <div className="question-card">
 
           <div className="question-card__number">
-
             QUESTION{' '}
-
             {currentQuestion + 1}
-
           </div>
 
 
           <h3>
-
             {currentQuestion + 1}.{' '}
-
             {question.question}
-
           </h3>
 
 
@@ -1942,56 +1762,53 @@ function QuizPage() {
 
           <div className="options">
 
-            {question.options.map(
-              (option, index) => (
+            {Array.isArray(question.options) &&
+              question.options.map(
+                (option, index) => (
 
-                <label
-                  key={option}
-                  className={`option ${
-                    answers[
-                      question.id
-                    ] === option
-                      ? 'option--selected'
-                      : ''
-                  }`}
-                >
-
-                  <input
-                    type="radio"
-                    name={`question-${question.id}`}
-                    checked={
+                  <label
+                    key={option}
+                    className={`option ${
                       answers[
                         question.id
                       ] === option
-                    }
-                    onChange={() =>
-                      handleAnswer(
-                        question.id,
-                        option
-                      )
-                    }
-                  />
+                        ? 'option--selected'
+                        : ''
+                    }`}
+                  >
+
+                    <input
+                      type="radio"
+                      name={`question-${question.id}`}
+                      checked={
+                        answers[
+                          question.id
+                        ] === option
+                      }
+                      onChange={() =>
+                        handleAnswer(
+                          question.id,
+                          option
+                        )
+                      }
+                    />
 
 
-                  <span className="option-letter">
-
-                    {String.fromCharCode(
-                      65 + index
-                    )}
-
-                  </span>
+                    <span className="option-letter">
+                      {String.fromCharCode(
+                        65 + index
+                      )}
+                    </span>
 
 
-                  <span className="option-text">
+                    <span className="option-text">
+                      {option}
+                    </span>
 
-                    {option}
+                  </label>
 
-                  </span>
-
-                </label>
-
-              )
-            )}
+                )
+              )}
 
           </div>
 
@@ -2006,7 +1823,6 @@ function QuizPage() {
 
 
           {currentQuestion > 0 && (
-
             <button
               className="submit-quiz secondary-action"
               onClick={() =>
@@ -2017,7 +1833,6 @@ function QuizPage() {
             >
               ← Previous
             </button>
-
           )}
 
 
@@ -2042,11 +1857,9 @@ function QuizPage() {
               onClick={submitQuiz}
               disabled={submitting}
             >
-
               {submitting
                 ? 'Submitting...'
                 : 'Submit Quiz ✓'}
-
             </button>
 
           )}
@@ -2056,9 +1869,7 @@ function QuizPage() {
       </div>
 
     </section>
-
   );
-
 }
 
 

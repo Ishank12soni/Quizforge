@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 
+import API_BASE_URL from '../api';
+
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import ExploreSection from '../components/ExploreSection';
@@ -8,15 +10,25 @@ import Footer from '../components/Footer';
 
 import './HomePage.css';
 
+
+// =========================================================
+// QUIZFORGE HOME PAGE
+// =========================================================
+
 function HomePage() {
 
-  const [showExplore, setShowExplore] = useState(false);
+  const [showExplore, setShowExplore] =
+    useState(false);
 
-  const [performance, setPerformance] = useState(null);
-  const [history, setHistory] = useState([]);
+  const [performance, setPerformance] =
+    useState(null);
+
+  const [history, setHistory] =
+    useState([]);
 
   const [performanceLoading, setPerformanceLoading] =
     useState(true);
+
 
   // =========================================================
   // STUDENT INFORMATION
@@ -86,6 +98,7 @@ function HomePage() {
         setPerformanceLoading(false);
 
         return;
+
       }
 
 
@@ -103,12 +116,14 @@ function HomePage() {
           historyResponse,
         ] = await Promise.all([
 
+          // PERFORMANCE
           fetch(
-            `http://localhost:5001/api/quiz/performance?studentId=${studentId}`
+            `${API_BASE_URL}/api/quiz/performance?studentId=${studentId}`
           ),
 
+          // HISTORY
           fetch(
-            `http://localhost:5001/api/quiz/history?studentId=${studentId}`
+            `${API_BASE_URL}/api/quiz/history?studentId=${studentId}`
           ),
 
         ]);
@@ -200,7 +215,12 @@ function HomePage() {
   }, [studentId]);
 
 
+  // =========================================================
+  // HOME PAGE
+  // =========================================================
+
   return (
+
     <>
       <Navbar />
 
@@ -536,11 +556,14 @@ function HomePage() {
 
                       {history
                         .slice(0, 5)
-                        .map((attempt) => (
+                        .map((attempt, index) => (
 
                           <div
                             className="home-history-item"
-                            key={attempt.id}
+                            key={
+                              attempt.id ||
+                              `${attempt.quiz_id}-${index}`
+                            }
                           >
 
 
@@ -565,8 +588,8 @@ function HomePage() {
 
                                 <span>
 
-                                  {attempt.score}/
-                                  {attempt.total_questions}
+                                  {attempt.score ?? 0}/
+                                  {attempt.total_questions ?? 0}
 
                                   {' '}correct
 
@@ -582,7 +605,7 @@ function HomePage() {
                             <div className="home-history-right">
 
                               <strong>
-                                {attempt.percentage}%
+                                {attempt.percentage ?? 0}%
                               </strong>
 
 
@@ -679,7 +702,10 @@ function HomePage() {
       <Footer />
 
     </>
+
   );
+
 }
+
 
 export default HomePage;
