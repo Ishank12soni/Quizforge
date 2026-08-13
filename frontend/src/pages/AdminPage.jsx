@@ -16,7 +16,7 @@ function AdminPage() {
 
 
   // =========================================================
-  // STATE
+  // MAIN STATE
   // =========================================================
 
   const [activeSection, setActiveSection] =
@@ -31,12 +31,37 @@ function AdminPage() {
   const [loading, setLoading] =
     useState(true);
 
-  const [showCreateQuiz, setShowCreateQuiz] =
+
+  // =========================================================
+  // QUIZ MANAGEMENT STATE
+  // =========================================================
+
+  const [quizzes, setQuizzes] =
+    useState([]);
+
+  const [quizzesLoading, setQuizzesLoading] =
     useState(false);
+
+  const [quizzesError, setQuizzesError] =
+    useState('');
+
+
+  const [selectedQuiz, setSelectedQuiz] =
+    useState(null);
+
+  const [selectedQuizLoading, setSelectedQuizLoading] =
+    useState(false);
+
+  const [selectedQuizError, setSelectedQuizError] =
+    useState('');
+
+
+  const [quizMode, setQuizMode] =
+    useState('list');
 
 
   // =========================================================
-  // CREATE QUIZ STATE
+  // CREATE / EDIT QUIZ STATE
   // =========================================================
 
   const [quizTitle, setQuizTitle] =
@@ -54,13 +79,17 @@ function AdminPage() {
       },
     ]);
 
-  const [createQuizLoading, setCreateQuizLoading] =
+
+  const [editingQuizId, setEditingQuizId] =
+    useState(null);
+
+  const [quizFormLoading, setQuizFormLoading] =
     useState(false);
 
-  const [createQuizMessage, setCreateQuizMessage] =
+  const [quizFormMessage, setQuizFormMessage] =
     useState('');
 
-  const [createQuizError, setCreateQuizError] =
+  const [quizFormError, setQuizFormError] =
     useState('');
 
 
@@ -91,9 +120,9 @@ function AdminPage() {
       ]);
 
 
-      // =====================================================
-      // STUDENT RESULTS
-      // =====================================================
+      // -----------------------------------------------------
+      // RESULTS
+      // -----------------------------------------------------
 
       if (resultsResponse.ok) {
 
@@ -108,18 +137,14 @@ function AdminPage() {
 
       } else {
 
-        console.error(
-          'Failed to fetch admin results'
-        );
-
         setResults([]);
 
       }
 
 
-      // =====================================================
+      // -----------------------------------------------------
       // PERFORMANCE
-      // =====================================================
+      // -----------------------------------------------------
 
       if (performanceResponse.ok) {
 
@@ -131,10 +156,6 @@ function AdminPage() {
         );
 
       } else {
-
-        console.error(
-          'Failed to fetch admin performance'
-        );
 
         setPerformance(null);
 
@@ -160,201 +181,20 @@ function AdminPage() {
 
 
   // =========================================================
-  // INITIAL LOAD
+  // LOAD QUIZZES
   // =========================================================
 
-  useEffect(() => {
-
-    loadAdminData();
-
-  }, []);
-
-
-  // =========================================================
-  // REFRESH
-  // =========================================================
-
-  const refreshData = async () => {
-
-    await loadAdminData();
-
-  };
-
-
-  // =========================================================
-  // RESET CREATE QUIZ FORM
-  // =========================================================
-
-  const resetCreateQuizForm = () => {
-
-    setQuizTitle('');
-
-    setQuizDescription('');
-
-    setNewQuestions([
-      {
-        question: '',
-        options: ['', '', '', ''],
-        correct_answer: 0,
-      },
-    ]);
-
-    setCreateQuizMessage('');
-
-    setCreateQuizError('');
-
-  };
-
-
-  // =========================================================
-  // OPEN CREATE QUIZ
-  // =========================================================
-
-  const openCreateQuiz = () => {
-
-    setShowCreateQuiz(true);
-
-    setActiveSection('create');
-
-    setCreateQuizMessage('');
-
-    setCreateQuizError('');
-
-  };
-
-
-  // =========================================================
-  // CLOSE CREATE QUIZ
-  // =========================================================
-
-  const closeCreateQuiz = () => {
-
-    setShowCreateQuiz(false);
-
-    setActiveSection('dashboard');
-
-    resetCreateQuizForm();
-
-  };
-
-
-  // =========================================================
-  // CREATE QUIZ
-  // =========================================================
-
-  const createQuiz = async () => {
-
-    setCreateQuizMessage('');
-
-    setCreateQuizError('');
-
-
-    // =====================================================
-    // VALIDATE TITLE
-    // =====================================================
-
-    if (!quizTitle.trim()) {
-
-      setCreateQuizError(
-        'Please enter a quiz title.'
-      );
-
-      return;
-
-    }
-
-
-    // =====================================================
-    // VALIDATE QUESTIONS
-    // =====================================================
-
-    for (
-      let i = 0;
-      i < newQuestions.length;
-      i++
-    ) {
-
-      const item =
-        newQuestions[i];
-
-
-      if (!item.question.trim()) {
-
-        setCreateQuizError(
-          `Please enter Question ${i + 1}.`
-        );
-
-        return;
-
-      }
-
-
-      if (
-        item.options.some(
-          (option) =>
-            !option.trim()
-        )
-      ) {
-
-        setCreateQuizError(
-          `Please fill all 4 options for Question ${i + 1}.`
-        );
-
-        return;
-
-      }
-
-    }
-
+  const loadQuizzes = async () => {
 
     try {
 
-      setCreateQuizLoading(true);
+      setQuizzesLoading(true);
+      setQuizzesError('');
 
 
       const response =
         await fetch(
-          `${API_BASE_URL}/api/admin/quizzes`,
-          {
-            method: 'POST',
-
-            headers: {
-              'Content-Type':
-                'application/json',
-            },
-
-            body: JSON.stringify({
-
-              title:
-                quizTitle.trim(),
-
-              description:
-                quizDescription.trim(),
-
-              questions:
-                newQuestions.map(
-                  (item) => ({
-
-                    question:
-                      item.question.trim(),
-
-                    options:
-                      item.options.map(
-                        (option) =>
-                          option.trim()
-                      ),
-
-                    correct_answer:
-                      Number(
-                        item.correct_answer
-                      ),
-
-                  })
-                ),
-
-            }),
-
-          }
+          `${API_BASE_URL}/api/admin/quizzes`
         );
 
 
@@ -362,7 +202,7 @@ function AdminPage() {
         await response
           .json()
           .catch(
-            () => ({})
+            () => []
           );
 
 
@@ -370,61 +210,36 @@ function AdminPage() {
 
         throw new Error(
           data.message ||
-          'Failed to create quiz.'
+          'Failed to load quizzes.'
         );
 
       }
 
 
-      // =====================================================
-      // SUCCESS
-      // =====================================================
-
-      setCreateQuizMessage(
-        data.quiz?.title
-          ? `Quiz "${data.quiz.title}" created successfully!`
-          : 'Quiz created successfully!'
+      setQuizzes(
+        Array.isArray(data)
+          ? data
+          : []
       );
 
-
-      // =====================================================
-      // RESET FORM
-      // =====================================================
-
-      setQuizTitle('');
-
-      setQuizDescription('');
-
-      setNewQuestions([
-        {
-          question: '',
-          options: ['', '', '', ''],
-          correct_answer: 0,
-        },
-      ]);
-
-
-      // =====================================================
-      // REFRESH DATA
-      // =====================================================
-
-      await refreshData();
 
     } catch (error) {
 
       console.error(
-        'Create quiz error:',
+        'Quiz loading error:',
         error
       );
 
-      setCreateQuizError(
+      setQuizzes([]);
+
+      setQuizzesError(
         error.message ||
-        'Failed to create quiz.'
+        'Failed to load quizzes.'
       );
 
     } finally {
 
-      setCreateQuizLoading(false);
+      setQuizzesLoading(false);
 
     }
 
@@ -432,159 +247,77 @@ function AdminPage() {
 
 
   // =========================================================
-  // ADD QUESTION
+  // INITIAL LOAD
   // =========================================================
 
-  const addQuestion = () => {
+  useEffect(() => {
 
-    setNewQuestions(
-      (previous) => [
+    loadAdminData();
+    loadQuizzes();
 
-        ...previous,
+  }, []);
 
-        {
-          question: '',
-          options: ['', '', '', ''],
-          correct_answer: 0,
-        },
 
-      ]
-    );
+  // =========================================================
+  // REFRESH ALL DATA
+  // =========================================================
+
+  const refreshData = async () => {
+
+    await Promise.all([
+      loadAdminData(),
+      loadQuizzes(),
+    ]);
 
   };
 
 
   // =========================================================
-  // REMOVE QUESTION
+  // UNIQUE STUDENTS
   // =========================================================
 
-  const removeQuestion = (
-    questionIndex
-  ) => {
+  const uniqueStudentIds =
+    new Set();
 
-    if (
-      newQuestions.length === 1
-    ) {
 
-      return;
+  results.forEach(
+    (attempt) => {
+
+      if (
+        attempt.student_id !== null &&
+        attempt.student_id !== undefined
+      ) {
+
+        uniqueStudentIds.add(
+          String(
+            attempt.student_id
+          )
+        );
+
+      } else if (
+        attempt.student_name
+      ) {
+
+        uniqueStudentIds.add(
+          attempt.student_name
+        );
+
+      }
 
     }
+  );
 
 
-    setNewQuestions(
-      (previous) =>
-        previous.filter(
-          (_, index) =>
-            index !== questionIndex
-        )
-    );
-
-  };
+  const uniqueStudents =
+    uniqueStudentIds.size;
 
 
   // =========================================================
-  // UPDATE QUESTION
+  // TOTAL ATTEMPTS
   // =========================================================
 
-  const updateQuestion = (
-    questionIndex,
-    value
-  ) => {
-
-    setNewQuestions(
-      (previous) =>
-        previous.map(
-          (item, index) =>
-
-            index === questionIndex
-              ? {
-                  ...item,
-                  question: value,
-                }
-              : item
-
-        )
-    );
-
-  };
-
-
-  // =========================================================
-  // UPDATE OPTION
-  // =========================================================
-
-  const updateOption = (
-    questionIndex,
-    optionIndex,
-    value
-  ) => {
-
-    setNewQuestions(
-      (previous) =>
-
-        previous.map(
-          (item, index) => {
-
-            if (
-              index !== questionIndex
-            ) {
-
-              return item;
-
-            }
-
-
-            const updatedOptions = [
-              ...item.options,
-            ];
-
-
-            updatedOptions[
-              optionIndex
-            ] = value;
-
-
-            return {
-              ...item,
-              options:
-                updatedOptions,
-            };
-
-          }
-        )
-
-    );
-
-  };
-
-
-  // =========================================================
-  // UPDATE CORRECT ANSWER
-  // =========================================================
-
-  const updateCorrectAnswer = (
-    questionIndex,
-    value
-  ) => {
-
-    setNewQuestions(
-      (previous) =>
-
-        previous.map(
-          (item, index) =>
-
-            index === questionIndex
-              ? {
-                  ...item,
-                  correct_answer:
-                    Number(value),
-                }
-              : item
-
-        )
-    );
-
-  };
+  const totalAttempts =
+    results.length;
 
 
   // =========================================================
@@ -640,56 +373,6 @@ function AdminPage() {
 
 
   // =========================================================
-  // UNIQUE STUDENTS
-  // =========================================================
-
-  const uniqueStudentIds =
-    new Set();
-
-
-  results.forEach(
-    (attempt) => {
-
-      if (
-        attempt.student_id !==
-          null &&
-        attempt.student_id !==
-          undefined
-      ) {
-
-        uniqueStudentIds.add(
-          String(
-            attempt.student_id
-          )
-        );
-
-      } else if (
-        attempt.student_name
-      ) {
-
-        uniqueStudentIds.add(
-          attempt.student_name
-        );
-
-      }
-
-    }
-  );
-
-
-  const uniqueStudents =
-    uniqueStudentIds.size;
-
-
-  // =========================================================
-  // TOTAL ATTEMPTS
-  // =========================================================
-
-  const totalAttempts =
-    results.length;
-
-
-  // =========================================================
   // STUDENT RANKING
   // =========================================================
 
@@ -701,10 +384,8 @@ function AdminPage() {
 
       const studentKey =
 
-        attempt.student_id !==
-          null &&
-        attempt.student_id !==
-          undefined
+        attempt.student_id !== null &&
+        attempt.student_id !== undefined
 
           ? String(
               attempt.student_id
@@ -797,14 +478,6 @@ function AdminPage() {
 
       }
 
-
-      studentMap[
-        studentKey
-      ].latestQuiz =
-        getQuizName(
-          attempt
-        );
-
     }
   );
 
@@ -863,20 +536,773 @@ function AdminPage() {
 
 
     if (score >= 80) {
-
       return 'score-good';
-
     }
 
 
     if (score >= 60) {
-
       return 'score-average';
-
     }
 
 
     return 'score-low';
+
+  };
+
+
+  // =========================================================
+  // RESET QUIZ FORM
+  // =========================================================
+
+  const resetQuizForm = () => {
+
+    setQuizTitle('');
+
+    setQuizDescription('');
+
+    setNewQuestions([
+      {
+        question: '',
+        options: ['', '', '', ''],
+        correct_answer: 0,
+      },
+    ]);
+
+    setEditingQuizId(null);
+
+    setQuizFormMessage('');
+
+    setQuizFormError('');
+
+  };
+
+
+  // =========================================================
+  // OPEN CREATE QUIZ
+  // =========================================================
+
+  const openCreateQuiz = () => {
+
+    resetQuizForm();
+
+    setQuizMode('create');
+
+    setActiveSection('quizzes');
+
+  };
+
+
+  // =========================================================
+  // LOAD SINGLE QUIZ
+  // =========================================================
+
+  const loadSingleQuiz = async (
+    quizId
+  ) => {
+
+    try {
+
+      setSelectedQuizLoading(true);
+      setSelectedQuizError('');
+
+
+      const response =
+        await fetch(
+          `${API_BASE_URL}/api/admin/quizzes/${quizId}`
+        );
+
+
+      const data =
+        await response
+          .json()
+          .catch(
+            () => ({})
+          );
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          data.message ||
+          'Failed to load quiz.'
+        );
+
+      }
+
+
+      setSelectedQuiz(
+        data
+      );
+
+
+      setQuizMode('view');
+
+
+    } catch (error) {
+
+      console.error(
+        'Single quiz loading error:',
+        error
+      );
+
+      setSelectedQuiz(null);
+
+      setSelectedQuizError(
+        error.message ||
+        'Failed to load quiz.'
+      );
+
+    } finally {
+
+      setSelectedQuizLoading(false);
+
+    }
+
+  };
+
+
+  // =========================================================
+  // OPEN EDIT QUIZ
+  // =========================================================
+
+  const openEditQuiz = async (
+    quizId
+  ) => {
+
+    try {
+
+      setSelectedQuizLoading(true);
+      setSelectedQuizError('');
+      setQuizFormError('');
+      setQuizFormMessage('');
+
+
+      const response =
+        await fetch(
+          `${API_BASE_URL}/api/admin/quizzes/${quizId}`
+        );
+
+
+      const data =
+        await response
+          .json()
+          .catch(
+            () => ({})
+          );
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          data.message ||
+          'Failed to load quiz.'
+        );
+
+      }
+
+
+      const quiz =
+        data.quiz;
+
+
+      const questions =
+        Array.isArray(data.questions) &&
+        data.questions.length > 0
+
+          ? data.questions.map(
+              (question) => ({
+
+                question:
+                  question.question ||
+                  '',
+
+                options:
+                  Array.isArray(
+                    question.options
+                  )
+
+                    ? [
+                        question.options[0] || '',
+                        question.options[1] || '',
+                        question.options[2] || '',
+                        question.options[3] || '',
+                      ]
+
+                    : [
+                        '',
+                        '',
+                        '',
+                        '',
+                      ],
+
+                correct_answer:
+                  Number(
+                    question.correct_answer
+                  ) || 0,
+
+              })
+            )
+
+          : [
+              {
+                question: '',
+                options: ['', '', '', ''],
+                correct_answer: 0,
+              },
+            ];
+
+
+      setQuizTitle(
+        quiz?.title || ''
+      );
+
+
+      setQuizDescription(
+        quiz?.description || ''
+      );
+
+
+      setNewQuestions(
+        questions
+      );
+
+
+      setEditingQuizId(
+        Number(quizId)
+      );
+
+
+      setQuizMode('edit');
+
+      setActiveSection('quizzes');
+
+
+    } catch (error) {
+
+      console.error(
+        'Edit quiz loading error:',
+        error
+      );
+
+      setQuizFormError(
+        error.message ||
+        'Failed to load quiz.'
+      );
+
+    } finally {
+
+      setSelectedQuizLoading(false);
+
+    }
+
+  };
+
+
+  // =========================================================
+  // CREATE / UPDATE QUIZ
+  // =========================================================
+
+  const saveQuiz = async () => {
+
+    setQuizFormMessage('');
+    setQuizFormError('');
+
+
+    // -------------------------------------------------------
+    // TITLE
+    // -------------------------------------------------------
+
+    if (
+      !quizTitle.trim()
+    ) {
+
+      setQuizFormError(
+        'Please enter a quiz title.'
+      );
+
+      return;
+
+    }
+
+
+    // -------------------------------------------------------
+    // QUESTIONS
+    // -------------------------------------------------------
+
+    if (
+      newQuestions.length === 0
+    ) {
+
+      setQuizFormError(
+        'Please add at least one question.'
+      );
+
+      return;
+
+    }
+
+
+    for (
+      let i = 0;
+      i < newQuestions.length;
+      i++
+    ) {
+
+      const item =
+        newQuestions[i];
+
+
+      if (
+        !item.question.trim()
+      ) {
+
+        setQuizFormError(
+          `Please enter Question ${i + 1}.`
+        );
+
+        return;
+
+      }
+
+
+      if (
+        item.options.length !== 4 ||
+        item.options.some(
+          (option) =>
+            !option.trim()
+        )
+      ) {
+
+        setQuizFormError(
+          `Please fill all 4 options for Question ${i + 1}.`
+        );
+
+        return;
+
+      }
+
+
+      const correctAnswer =
+        Number(
+          item.correct_answer
+        );
+
+
+      if (
+        !Number.isInteger(
+          correctAnswer
+        ) ||
+        correctAnswer < 0 ||
+        correctAnswer > 3
+      ) {
+
+        setQuizFormError(
+          `Please select a valid correct answer for Question ${i + 1}.`
+        );
+
+        return;
+
+      }
+
+    }
+
+
+    try {
+
+      setQuizFormLoading(true);
+
+
+      const isEditing =
+        editingQuizId !== null;
+
+
+      const endpoint =
+        isEditing
+
+          ? `${API_BASE_URL}/api/admin/quizzes/${editingQuizId}`
+
+          : `${API_BASE_URL}/api/admin/quizzes`;
+
+
+      const method =
+        isEditing
+          ? 'PUT'
+          : 'POST';
+
+
+      const response =
+        await fetch(
+          endpoint,
+          {
+            method,
+
+            headers: {
+              'Content-Type':
+                'application/json',
+            },
+
+            body:
+              JSON.stringify({
+
+                title:
+                  quizTitle.trim(),
+
+                description:
+                  quizDescription.trim(),
+
+                questions:
+                  newQuestions.map(
+                    (item) => ({
+
+                      question:
+                        item.question.trim(),
+
+                      options:
+                        item.options.map(
+                          (option) =>
+                            option.trim()
+                        ),
+
+                      correct_answer:
+                        Number(
+                          item.correct_answer
+                        ),
+
+                    })
+                  ),
+
+              }),
+
+          }
+        );
+
+
+      const data =
+        await response
+          .json()
+          .catch(
+            () => ({})
+          );
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          data.message ||
+          (
+            isEditing
+              ? 'Failed to update quiz.'
+              : 'Failed to create quiz.'
+          )
+        );
+
+      }
+
+
+      setQuizFormMessage(
+        isEditing
+
+          ? 'Quiz updated successfully!'
+
+          : (
+              data.quiz?.title
+                ? `Quiz "${data.quiz.title}" created successfully!`
+                : 'Quiz created successfully!'
+            )
+      );
+
+
+      await loadQuizzes();
+
+      await loadAdminData();
+
+
+      // -----------------------------------------------------
+      // AFTER CREATE
+      // -----------------------------------------------------
+
+      if (!isEditing) {
+
+        resetQuizForm();
+
+        setQuizFormMessage(
+          'Quiz created successfully!'
+        );
+
+      }
+
+    } catch (error) {
+
+      console.error(
+        'Save quiz error:',
+        error
+      );
+
+
+      setQuizFormError(
+        error.message ||
+        'Failed to save quiz.'
+      );
+
+    } finally {
+
+      setQuizFormLoading(false);
+
+    }
+
+  };
+
+
+  // =========================================================
+  // DELETE QUIZ
+  // =========================================================
+
+  const deleteQuiz = async (
+    quizId,
+    quizTitleToDelete
+  ) => {
+
+    const confirmed =
+      window.confirm(
+        `Are you sure you want to delete "${quizTitleToDelete}"?\n\nThis action cannot be undone.`
+      );
+
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    try {
+
+      setQuizzesError('');
+
+
+      const response =
+        await fetch(
+          `${API_BASE_URL}/api/admin/quizzes/${quizId}`,
+          {
+            method: 'DELETE',
+          }
+        );
+
+
+      const data =
+        await response
+          .json()
+          .catch(
+            () => ({})
+          );
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          data.message ||
+          'Failed to delete quiz.'
+        );
+
+      }
+
+
+      setSelectedQuiz(null);
+
+      setQuizMode('list');
+
+
+      await loadQuizzes();
+
+
+      setQuizzesError(
+        ''
+      );
+
+
+      window.alert(
+        'Quiz deleted successfully.'
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        'Delete quiz error:',
+        error
+      );
+
+
+      window.alert(
+        error.message ||
+        'Failed to delete quiz.'
+      );
+
+    }
+
+  };
+
+
+  // =========================================================
+  // ADD QUESTION
+  // =========================================================
+
+  const addQuestion = () => {
+
+    setNewQuestions(
+      (previous) => [
+
+        ...previous,
+
+        {
+          question: '',
+          options: ['', '', '', ''],
+          correct_answer: 0,
+        },
+
+      ]
+    );
+
+  };
+
+
+  // =========================================================
+  // REMOVE QUESTION
+  // =========================================================
+
+  const removeQuestion = (
+    questionIndex
+  ) => {
+
+    if (
+      newQuestions.length === 1
+    ) {
+
+      return;
+
+    }
+
+
+    setNewQuestions(
+      (previous) =>
+        previous.filter(
+          (_, index) =>
+            index !== questionIndex
+        )
+    );
+
+  };
+
+
+  // =========================================================
+  // UPDATE QUESTION
+  // =========================================================
+
+  const updateQuestion = (
+    questionIndex,
+    value
+  ) => {
+
+    setNewQuestions(
+      (previous) =>
+        previous.map(
+          (item, index) =>
+
+            index === questionIndex
+
+              ? {
+                  ...item,
+                  question: value,
+                }
+
+              : item
+
+        )
+    );
+
+  };
+
+
+  // =========================================================
+  // UPDATE OPTION
+  // =========================================================
+
+  const updateOption = (
+    questionIndex,
+    optionIndex,
+    value
+  ) => {
+
+    setNewQuestions(
+      (previous) =>
+
+        previous.map(
+          (item, index) => {
+
+            if (
+              index !== questionIndex
+            ) {
+
+              return item;
+
+            }
+
+
+            const updatedOptions =
+              [
+                ...item.options,
+              ];
+
+
+            updatedOptions[
+              optionIndex
+            ] = value;
+
+
+            return {
+
+              ...item,
+
+              options:
+                updatedOptions,
+
+            };
+
+          }
+        )
+
+    );
+
+  };
+
+
+  // =========================================================
+  // UPDATE CORRECT ANSWER
+  // =========================================================
+
+  const updateCorrectAnswer = (
+    questionIndex,
+    value
+  ) => {
+
+    setNewQuestions(
+      (previous) =>
+
+        previous.map(
+          (item, index) =>
+
+            index === questionIndex
+
+              ? {
+                  ...item,
+
+                  correct_answer:
+                    Number(value),
+
+                }
+
+              : item
+
+        )
+    );
 
   };
 
@@ -947,14 +1373,13 @@ function AdminPage() {
 
 
         {/* =================================================
-            PERFORMANCE OVERVIEW
+            PERFORMANCE
             ================================================= */}
 
         <div className="admin-section-card">
 
 
           <div className="admin-section-header">
-
 
             <div>
 
@@ -986,7 +1411,6 @@ function AdminPage() {
             >
               🔄 Refresh
             </button>
-
 
           </div>
 
@@ -1050,7 +1474,6 @@ function AdminPage() {
 
           <div className="admin-section-header">
 
-
             <div>
 
               <span className="admin-section-icon">
@@ -1084,7 +1507,6 @@ function AdminPage() {
               View Rankings →
             </button>
 
-
           </div>
 
 
@@ -1115,7 +1537,6 @@ function AdminPage() {
                       }
                     >
 
-
                       <div
                         className={`ranking-number ${
                           student.rank === 1
@@ -1128,17 +1549,19 @@ function AdminPage() {
                         }`}
                       >
 
-                        {student.rank <= 3
+                        {
+                          student.rank <= 3
 
-                          ? [
-                              '🥇',
-                              '🥈',
-                              '🥉',
-                            ][
-                              student.rank - 1
-                            ]
+                            ? [
+                                '🥇',
+                                '🥈',
+                                '🥉',
+                              ][
+                                student.rank - 1
+                              ]
 
-                          : `#${student.rank}`}
+                            : `#${student.rank}`
+                        }
 
                       </div>
 
@@ -1171,7 +1594,6 @@ function AdminPage() {
 
                       </div>
 
-
                     </div>
 
                   )
@@ -1193,7 +1615,6 @@ function AdminPage() {
 
           <div className="admin-section-header">
 
-
             <div>
 
               <span className="admin-section-icon">
@@ -1213,7 +1634,6 @@ function AdminPage() {
               </div>
 
             </div>
-
 
           </div>
 
@@ -1338,7 +1758,6 @@ function AdminPage() {
 
         </div>
 
-
       </div>
 
     );
@@ -1356,12 +1775,9 @@ function AdminPage() {
 
       <div className="admin-content">
 
-
         <div className="admin-section-card">
 
-
           <div className="admin-section-header">
-
 
             <div>
 
@@ -1392,7 +1808,6 @@ function AdminPage() {
             >
               🔄 Refresh
             </button>
-
 
           </div>
 
@@ -1531,7 +1946,6 @@ function AdminPage() {
 
                         </td>
 
-
                       </tr>
 
                     )
@@ -1546,7 +1960,6 @@ function AdminPage() {
           )}
 
         </div>
-
 
       </div>
 
@@ -1565,12 +1978,9 @@ function AdminPage() {
 
       <div className="admin-content">
 
-
         <div className="admin-section-card">
 
-
           <div className="admin-section-header">
-
 
             <div>
 
@@ -1603,7 +2013,6 @@ function AdminPage() {
               🔄 Refresh
             </button>
 
-
           </div>
 
 
@@ -1632,7 +2041,6 @@ function AdminPage() {
                     }
                   >
 
-
                     <div
                       className={`ranking-number ${
                         student.rank === 1
@@ -1645,17 +2053,19 @@ function AdminPage() {
                       }`}
                     >
 
-                      {student.rank <= 3
+                      {
+                        student.rank <= 3
 
-                        ? [
-                            '🥇',
-                            '🥈',
-                            '🥉',
-                          ][
-                            student.rank - 1
-                          ]
+                          ? [
+                              '🥇',
+                              '🥈',
+                              '🥉',
+                            ][
+                              student.rank - 1
+                            ]
 
-                        : `#${student.rank}`}
+                          : `#${student.rank}`
+                      }
 
                     </div>
 
@@ -1691,6 +2101,583 @@ function AdminPage() {
 
                     </div>
 
+                  </div>
+
+                )
+              )}
+
+            </div>
+
+          )}
+
+        </div>
+
+      </div>
+
+    );
+
+  };
+
+
+  // =========================================================
+  // QUIZ LIST
+  // =========================================================
+
+  const renderQuizList = () => {
+
+    return (
+
+      <div className="admin-content">
+
+        <div className="admin-section-card">
+
+
+          <div className="admin-section-header">
+
+            <div>
+
+              <span className="admin-section-icon">
+                📝
+              </span>
+
+              <div>
+
+                <h2>
+                  Quiz Management
+                </h2>
+
+                <p>
+                  Create, view, edit and manage
+                  Industrial IoT quizzes.
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <div
+              style={{
+                display: 'flex',
+                gap: '10px',
+                flexWrap: 'wrap',
+              }}
+            >
+
+              <button
+                className="admin-refresh-button"
+                onClick={
+                  loadQuizzes
+                }
+              >
+                🔄 Refresh
+              </button>
+
+
+              <button
+                className="create-quiz-submit"
+                onClick={
+                  openCreateQuiz
+                }
+              >
+                ➕ Create Quiz
+              </button>
+
+            </div>
+
+          </div>
+
+
+          {quizzesError && (
+
+            <div className="create-quiz-error">
+              ⚠️ {quizzesError}
+            </div>
+
+          )}
+
+
+          {quizzesLoading ? (
+
+            <div className="admin-loading">
+
+              <div className="admin-loading-icon">
+                ⚡
+              </div>
+
+              <h2>
+                Loading Quizzes...
+              </h2>
+
+              <p>
+                Fetching Quizforge assessments.
+              </p>
+
+            </div>
+
+          ) : quizzes.length === 0 ? (
+
+            <div className="admin-empty">
+
+              <div
+                style={{
+                  fontSize: '40px',
+                  marginBottom: '10px',
+                }}
+              >
+                📝
+              </div>
+
+              <h3>
+                No quizzes found
+              </h3>
+
+              <p>
+                Create your first Industrial IoT quiz.
+              </p>
+
+
+              <button
+                className="create-quiz-submit"
+                onClick={
+                  openCreateQuiz
+                }
+              >
+                ➕ Create Your First Quiz
+              </button>
+
+            </div>
+
+          ) : (
+
+            <div
+              className="quiz-management-grid"
+              style={{
+                display: 'grid',
+                gridTemplateColumns:
+                  'repeat(auto-fit, minmax(280px, 1fr))',
+                gap: '20px',
+              }}
+            >
+
+              {quizzes.map(
+                (quiz) => (
+
+                  <article
+                    className="admin-section-card"
+                    key={
+                      quiz.id
+                    }
+                    style={{
+                      margin: 0,
+                    }}
+                  >
+
+                    <div
+                      style={{
+                        fontSize: '32px',
+                        marginBottom: '12px',
+                      }}
+                    >
+                      📘
+                    </div>
+
+
+                    <h3>
+                      {quiz.title}
+                    </h3>
+
+
+                    <p>
+                      {quiz.description ||
+                        'Industrial IoT assessment'}
+                    </p>
+
+
+                    <div
+                      style={{
+                        fontSize: '13px',
+                        opacity: 0.7,
+                        margin:
+                          '12px 0',
+                      }}
+                    >
+                      Quiz ID: #{quiz.id}
+                    </div>
+
+
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '8px',
+                        flexWrap: 'wrap',
+                      }}
+                    >
+
+                      <button
+                        className="admin-refresh-button"
+                        onClick={() =>
+                          loadSingleQuiz(
+                            quiz.id
+                          )
+                        }
+                      >
+                        👁️ View
+                      </button>
+
+
+                      <button
+                        className="admin-refresh-button"
+                        onClick={() =>
+                          openEditQuiz(
+                            quiz.id
+                          )
+                        }
+                      >
+                        ✏️ Edit
+                      </button>
+
+
+                      <button
+                        className="remove-question-button"
+                        onClick={() =>
+                          deleteQuiz(
+                            quiz.id,
+                            quiz.title
+                          )
+                        }
+                      >
+                        🗑️ Delete
+                      </button>
+
+                    </div>
+
+                  </article>
+
+                )
+              )}
+
+            </div>
+
+          )}
+
+        </div>
+
+      </div>
+
+    );
+
+  };
+
+
+  // =========================================================
+  // VIEW SINGLE QUIZ
+  // =========================================================
+
+  const renderViewQuiz = () => {
+
+    if (
+      selectedQuizLoading
+    ) {
+
+      return (
+
+        <div className="admin-content">
+
+          <div className="admin-section-card">
+
+            <div className="admin-loading">
+
+              <div className="admin-loading-icon">
+                ⚡
+              </div>
+
+              <h2>
+                Loading Quiz...
+              </h2>
+
+              <p>
+                Fetching quiz questions.
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      );
+
+    }
+
+
+    if (
+      selectedQuizError
+    ) {
+
+      return (
+
+        <div className="admin-content">
+
+          <div className="admin-section-card">
+
+            <div className="create-quiz-error">
+              ⚠️ {selectedQuizError}
+            </div>
+
+
+            <button
+              className="admin-refresh-button"
+              onClick={() => {
+                setSelectedQuizError('');
+                setQuizMode('list');
+              }}
+            >
+              ← Back to Quizzes
+            </button>
+
+          </div>
+
+        </div>
+
+      );
+
+    }
+
+
+    if (
+      !selectedQuiz
+    ) {
+
+      return (
+
+        <div className="admin-content">
+
+          <div className="admin-section-card">
+
+            <div className="admin-empty">
+              Quiz information is unavailable.
+            </div>
+
+          </div>
+
+        </div>
+
+      );
+
+    }
+
+
+    const quiz =
+      selectedQuiz.quiz;
+
+
+    const questions =
+      Array.isArray(
+        selectedQuiz.questions
+      )
+        ? selectedQuiz.questions
+        : [];
+
+
+    return (
+
+      <div className="admin-content">
+
+        <div className="admin-section-card">
+
+
+          <div className="admin-section-header">
+
+            <div>
+
+              <span className="admin-section-icon">
+                📘
+              </span>
+
+              <div>
+
+                <h2>
+                  {quiz.title}
+                </h2>
+
+                <p>
+                  {quiz.description ||
+                    'Industrial IoT assessment'}
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <div
+              style={{
+                display: 'flex',
+                gap: '8px',
+                flexWrap: 'wrap',
+              }}
+            >
+
+              <button
+                className="admin-refresh-button"
+                onClick={() =>
+                  openEditQuiz(
+                    quiz.id
+                  )
+                }
+              >
+                ✏️ Edit
+              </button>
+
+
+              <button
+                className="admin-refresh-button"
+                onClick={() => {
+                  setSelectedQuiz(null);
+                  setQuizMode('list');
+                }}
+              >
+                ← Back
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <div
+            style={{
+              marginBottom: '20px',
+              opacity: 0.7,
+            }}
+          >
+            <strong>
+              Quiz ID:
+            </strong>{' '}
+            #{quiz.id}
+            {' • '}
+            <strong>
+              Questions:
+            </strong>{' '}
+            {questions.length}
+          </div>
+
+
+          {questions.length === 0 ? (
+
+            <div className="admin-empty">
+              This quiz has no questions.
+            </div>
+
+          ) : (
+
+            <div>
+
+              {questions.map(
+                (
+                  question,
+                  index
+                ) => (
+
+                  <div
+                    className="create-question-card"
+                    key={
+                      question.id ||
+                      index
+                    }
+                  >
+
+                    <div className="create-question-header">
+
+                      <div>
+
+                        <span>
+                          QUESTION {index + 1}
+                        </span>
+
+                        <h3>
+                          {question.question}
+                        </h3>
+
+                      </div>
+
+                    </div>
+
+
+                    <div
+                      style={{
+                        display: 'grid',
+                        gap: '10px',
+                      }}
+                    >
+
+                      {(
+                        Array.isArray(
+                          question.options
+                        )
+                          ? question.options
+                          : []
+                      ).map(
+                        (
+                          option,
+                          optionIndex
+                        ) => (
+
+                          <div
+                            key={
+                              optionIndex
+                            }
+                            style={{
+                              padding:
+                                '12px 15px',
+                              borderRadius:
+                                '8px',
+                              border:
+                                optionIndex ===
+                                Number(
+                                  question.correct_answer
+                                )
+                                  ? '2px solid #00D9FF'
+                                  : '1px solid #1D405C',
+                            }}
+                          >
+
+                            <strong>
+                              {
+                                String.fromCharCode(
+                                  65 +
+                                  optionIndex
+                                )
+                              }
+                              .
+                            </strong>{' '}
+
+                            {option}
+
+
+                            {optionIndex ===
+                              Number(
+                                question.correct_answer
+                              ) && (
+
+                              <span
+                                style={{
+                                  marginLeft:
+                                    '10px',
+                                }}
+                              >
+                                ✓ Correct
+                              </span>
+
+                            )}
+
+                          </div>
+
+                        )
+                      )}
+
+                    </div>
 
                   </div>
 
@@ -1703,7 +2690,6 @@ function AdminPage() {
 
         </div>
 
-
       </div>
 
     );
@@ -1712,37 +2698,44 @@ function AdminPage() {
 
 
   // =========================================================
-  // CREATE QUIZ
+  // QUIZ FORM
   // =========================================================
 
-  const renderCreateQuiz = () => {
+  const renderQuizForm = () => {
+
+    const isEditing =
+      editingQuizId !== null;
+
 
     return (
 
       <div className="admin-content">
-
 
         <div className="admin-section-card">
 
 
           <div className="admin-section-header">
 
-
             <div>
 
               <span className="admin-section-icon">
-                ➕
+                {isEditing
+                  ? '✏️'
+                  : '➕'}
               </span>
 
               <div>
 
                 <h2>
-                  Create New Quiz
+                  {isEditing
+                    ? 'Edit Quiz'
+                    : 'Create New Quiz'}
                 </h2>
 
                 <p>
-                  Create an Industrial IoT assessment
-                  for students.
+                  {isEditing
+                    ? 'Update quiz details and questions.'
+                    : 'Create an Industrial IoT assessment for students.'}
                 </p>
 
               </div>
@@ -1752,13 +2745,19 @@ function AdminPage() {
 
             <button
               className="admin-refresh-button"
-              onClick={
-                closeCreateQuiz
+              onClick={() => {
+
+                resetQuizForm();
+
+                setQuizMode('list');
+
+              }}
+              disabled={
+                quizFormLoading
               }
             >
               ← Back
             </button>
-
 
           </div>
 
@@ -1853,7 +2852,6 @@ function AdminPage() {
 
               </span>
 
-
             </div>
 
 
@@ -1899,12 +2897,14 @@ function AdminPage() {
                             questionIndex
                           )
                         }
+                        disabled={
+                          quizFormLoading
+                        }
                       >
                         🗑 Remove
                       </button>
 
                     )}
-
 
                   </div>
 
@@ -1961,18 +2961,22 @@ function AdminPage() {
                           <div className="option-label">
 
                             <span>
-                              {String.fromCharCode(
-                                65 +
-                                optionIndex
-                              )}
+                              {
+                                String.fromCharCode(
+                                  65 +
+                                  optionIndex
+                                )
+                              }
                             </span>
 
                             <label>
                               Option{' '}
-                              {String.fromCharCode(
-                                65 +
-                                optionIndex
-                              )}
+                              {
+                                String.fromCharCode(
+                                  65 +
+                                  optionIndex
+                                )
+                              }
                             </label>
 
                           </div>
@@ -1996,7 +3000,6 @@ function AdminPage() {
                                 )
                             }
                           />
-
 
                         </div>
 
@@ -2051,7 +3054,6 @@ function AdminPage() {
                       ✓ Correct answer
                     </span>
 
-
                   </div>
 
 
@@ -2059,7 +3061,6 @@ function AdminPage() {
 
               )
             )}
-
 
           </div>
 
@@ -2074,6 +3075,9 @@ function AdminPage() {
             onClick={
               addQuestion
             }
+            disabled={
+              quizFormLoading
+            }
           >
             ➕ Add Another Question
           </button>
@@ -2083,19 +3087,19 @@ function AdminPage() {
               MESSAGES
               ================================================= */}
 
-          {createQuizError && (
+          {quizFormError && (
 
             <div className="create-quiz-error">
-              ⚠️ {createQuizError}
+              ⚠️ {quizFormError}
             </div>
 
           )}
 
 
-          {createQuizMessage && (
+          {quizFormMessage && (
 
             <div className="create-quiz-success">
-              ✅ {createQuizMessage}
+              ✅ {quizFormMessage}
             </div>
 
           )}
@@ -2111,11 +3115,15 @@ function AdminPage() {
             <button
               type="button"
               className="create-quiz-cancel"
-              onClick={
-                closeCreateQuiz
-              }
+              onClick={() => {
+
+                resetQuizForm();
+
+                setQuizMode('list');
+
+              }}
               disabled={
-                createQuizLoading
+                quizFormLoading
               }
             >
               Cancel
@@ -2126,18 +3134,22 @@ function AdminPage() {
               type="button"
               className="create-quiz-submit"
               onClick={
-                createQuiz
+                saveQuiz
               }
               disabled={
-                createQuizLoading
+                quizFormLoading
               }
             >
 
-              {createQuizLoading
+              {quizFormLoading
 
-                ? '⏳ Creating Quiz...'
+                ? '⏳ Saving Quiz...'
 
-                : '⚡ Create Quiz'}
+                : (
+                    isEditing
+                      ? '💾 Update Quiz'
+                      : '⚡ Create Quiz'
+                  )}
 
             </button>
 
@@ -2146,7 +3158,6 @@ function AdminPage() {
 
 
         </div>
-
 
       </div>
 
@@ -2216,7 +3227,7 @@ function AdminPage() {
         <button
           className={
             activeSection ===
-            'dashboard'
+              'dashboard'
               ? 'admin-nav-button active'
               : 'admin-nav-button'
           }
@@ -2226,9 +3237,10 @@ function AdminPage() {
               'dashboard'
             );
 
-            setShowCreateQuiz(
-              false
+            setQuizMode(
+              'list'
             );
+git 
 
           }}
         >
@@ -2239,7 +3251,7 @@ function AdminPage() {
         <button
           className={
             activeSection ===
-            'results'
+              'results'
               ? 'admin-nav-button active'
               : 'admin-nav-button'
           }
@@ -2249,8 +3261,8 @@ function AdminPage() {
               'results'
             );
 
-            setShowCreateQuiz(
-              false
+            setQuizMode(
+              'list'
             );
 
           }}
@@ -2262,7 +3274,7 @@ function AdminPage() {
         <button
           className={
             activeSection ===
-            'ranking'
+              'ranking'
               ? 'admin-nav-button active'
               : 'admin-nav-button'
           }
@@ -2272,8 +3284,8 @@ function AdminPage() {
               'ranking'
             );
 
-            setShowCreateQuiz(
-              false
+            setQuizMode(
+              'list'
             );
 
           }}
@@ -2284,10 +3296,33 @@ function AdminPage() {
 
         <button
           className={
-            showCreateQuiz
+            activeSection ===
+              'quizzes'
               ? 'admin-nav-button active'
               : 'admin-nav-button'
           }
+          onClick={() => {
+
+            setActiveSection(
+              'quizzes'
+            );
+
+            setQuizMode(
+              'list'
+            );
+
+            setSelectedQuiz(
+              null
+            );
+
+          }}
+        >
+          📝 Manage Quizzes
+        </button>
+
+
+        <button
+          className="admin-nav-button"
           onClick={
             openCreateQuiz
           }
@@ -2310,21 +3345,17 @@ function AdminPage() {
 
           <div className="admin-loading">
 
-
             <div className="admin-loading-icon">
               ⚡
             </div>
-
 
             <h2>
               Loading Admin Dashboard...
             </h2>
 
-
             <p>
               Fetching Quizforge performance data.
             </p>
-
 
           </div>
 
@@ -2348,13 +3379,31 @@ function AdminPage() {
 
 
             {activeSection ===
-              'create' &&
-              renderCreateQuiz()}
+              'quizzes' &&
+
+              quizMode === 'list' &&
+              renderQuizList()}
+
+
+            {activeSection ===
+              'quizzes' &&
+
+              quizMode === 'view' &&
+              renderViewQuiz()}
+
+
+            {activeSection ===
+              'quizzes' &&
+
+              (
+                quizMode === 'create' ||
+                quizMode === 'edit'
+              ) &&
+              renderQuizForm()}
 
           </>
 
         )}
-
 
       </main>
 
@@ -2365,16 +3414,13 @@ function AdminPage() {
 
       <footer className="admin-footer">
 
-
         <span>
           ⚡ Quizforge
         </span>
 
-
         <p>
           Industrial IoT Quiz Management Platform
         </p>
-
 
       </footer>
 
@@ -2401,26 +3447,21 @@ function AdminStat({
 
     <div className="admin-stat-card">
 
-
       <div className="admin-stat-icon">
         {icon}
       </div>
-
 
       <span className="admin-stat-title">
         {title}
       </span>
 
-
       <strong className="admin-stat-value">
         {value}
       </strong>
 
-
       <small className="admin-stat-description">
         {description}
       </small>
-
 
     </div>
 
