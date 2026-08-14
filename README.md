@@ -1,43 +1,38 @@
 # Quizforge – Industrial IoT Quiz Platform
 
-A web-based quiz application for B.Tech Industrial Internet of Things (IoT) course.
+A full-stack web-based quiz management and online assessment platform designed for the B.Tech Industrial Internet of Things (IoT) course.
+
+Quizforge provides an interactive student quiz portal, automatic scoring, quiz history, performance tracking, and an administrative dashboard for managing quizzes and monitoring student performance.
+
+---
 
 ## Tech Stack
+
+### Frontend
 
 - React
 - Vite
 - JavaScript
 - CSS
+- React Router
 
-## Getting Started
+### Backend
 
-```bash
-# Install dependencies
-npm install
+- Node.js
+- Express.js
+- PostgreSQL
+- PostgreSQL `pg` package
+- CORS
 
-# Start development server
-npm run dev
+### Development Tools
 
-# Build for production
-npm run build
-```
+- Git
+- GitHub
+- Visual Studio Code
+- npm
 
-## Project Structure
+---
 
-```
-src/
-├── components/     # Reusable UI components
-├── pages/          # Page-level components
-├── styles/         # Global CSS variables
-├── App.jsx         # Root app component
-└── main.jsx        # Entry point
-```
-
-## Day 1 Status
-
-- Project foundation with React + Vite
-- Professional homepage with navbar, hero, topic cards, features, and footer
-- Responsive design for laptop, tablet, and mobile
 ## Project Architecture
 
 Quizforge follows a separate frontend and backend architecture.
